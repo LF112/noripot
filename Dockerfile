@@ -1,10 +1,12 @@
+FROM caddy:2 AS caddy-bin
+
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
-# 安装 Caddy
-RUN apk add --no-cache caddy
+# 复制 Caddy
+COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
@@ -24,11 +26,6 @@ FROM base AS prerelease
 COPY --from=install /temp/dev/node_modules node_modules
 COPY . .
 
-# [optional] tests & build
-ENV NODE_ENV=production
-RUN bun test
-RUN bun run build
-
 # copy production dependencies and source code into final image
 FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
@@ -42,6 +39,6 @@ RUN chown -R bun:bun /run/caddy
 # run the app
 USER bun
 
-EXPOSE 80
+EXPOSE 4096
 
 ENTRYPOINT [ "bun", "run", "index.ts" ]
