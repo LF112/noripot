@@ -3,6 +3,9 @@
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
+# 安装 Caddy
+RUN apk add --no-cache caddy
+
 # install dependencies into temp directory
 # this will cache them and speed up future builds
 FROM base AS install
@@ -32,6 +35,13 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/index.ts .
 COPY --from=prerelease /usr/src/app/package.json .
 
+COPY Caddyfile /etc/caddy/Caddyfile
+RUN mkdir -p /run/caddy
+RUN chown -R bun:bun /run/caddy
+
 # run the app
 USER bun
+
+EXPOSE 80
+
 ENTRYPOINT [ "bun", "run", "index.ts" ]
