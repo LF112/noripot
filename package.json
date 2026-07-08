@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "gen:db": "bunx drizzle-kit generate",
     "build": "docker compose up -d --build"
   },
   "devDependencies": {

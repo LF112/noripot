@@ -24,10 +24,21 @@ WORKDIR /temp
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
+FROM install AS db-generate
+WORKDIR /temp
+
+COPY drizzle.config.ts ./
+COPY ./src/db/schema/ ./src/db/schema/
+COPY ./drizzle/ ./drizzle/
+RUN bun run gen:db
+
 FROM base AS release
 
 # node_modules
 COPY --from=install /temp/node_modules /usr/src/app/node_modules
+
+# database migrations
+COPY --from=db-generate /temp/drizzle /usr/src/app/drizzle
 
 # app source
 COPY index.ts /usr/src/app
