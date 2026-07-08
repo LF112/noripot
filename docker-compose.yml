@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  noripot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    ports:
+      - "4096:4096"
+      - "3001:3001"
+
+    volumes:
+      - ./noripot/runtime:/usr/src/app/runtime
+      - ./noripot/scripts:/usr/src/app/projects/scripts
+
+    environment:
+      NODE_ENV: production
+
+    init: true

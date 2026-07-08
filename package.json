@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "docker compose up -d --build"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@types/bun": "latest",

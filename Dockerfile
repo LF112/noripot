@@ -1,44 +1,50 @@
 FROM caddy:2 AS caddy-bin
 
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
-# 复制 Caddy
+# 复制 Caddy 二进制文件
 COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
 
-# install dependencies into temp directory
-# this will cache them and speed up future builds
+# 设置依赖镜像源
+RUN echo '[install]\nregistry = "https://registry.npmmirror.com"' > /root/.bunconfig.toml
+
+# 初始化全局工作区环境
+RUN mkdir -p \
+    /usr/src/app/runtime \
+    /usr/src/app/projects/scripts
+
+
+RUN echo '{"name":"noripot-projects","private":true,"workspaces":["scripts/*","scripts/*/*"]}' > /usr/src/app/projects/package.json
+RUN echo '[install]\nlinker = "isolated"\nregistry = "https://registry.npmmirror.com"' > /usr/src/app/projects/bunfig.toml
+
 FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+WORKDIR /temp
 
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
-COPY . .
-
-# copy production dependencies and source code into final image
 FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.ts .
-COPY --from=prerelease /usr/src/app/package.json .
+
+# node_modules
+COPY --from=install /temp/node_modules /usr/src/app/node_modules
+
+# app source
+COPY index.ts /usr/src/app
+COPY ./src/ /usr/src/app/src
+
+# projects workspace
+COPY --from=base /usr/src/app/projects /usr/src/app/projects
+
+# permissions
+RUN chown -R bun:bun /usr/src/app
 
 COPY Caddyfile /etc/caddy/Caddyfile
-RUN mkdir -p /run/caddy
-RUN chown -R bun:bun /run/caddy
 
-# run the app
+RUN mkdir -p /run/caddy && chown -R bun:bun /run/caddy
+
+EXPOSE 4096 3001
+
 USER bun
 
-EXPOSE 4096
-
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT ["bun", "run", "/usr/src/app/index.ts"]

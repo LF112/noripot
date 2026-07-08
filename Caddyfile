@@ -2,6 +2,6 @@
     admin "unix//run/caddy/admin.sock"
 }
 
-:80 {
+:4096 {
     respond "Bun Gateway is running, but no routes configured yet." 200
 }
