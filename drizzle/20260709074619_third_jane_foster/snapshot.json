@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "2c8369cb-736a-42a5-af73-e7e99b367727",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "name": "scripts",
@@ -24,7 +22,7 @@
       "type": "integer",
       "notNull": true,
       "autoincrement": false,
-      "default": "3",
+      "default": "-1",
       "generated": null,
       "name": "retry",
       "entityType": "columns",
@@ -41,18 +39,14 @@
       "table": "scripts"
     },
     {
-      "columns": [
-        "pathname"
-      ],
+      "columns": ["pathname"],
       "nameExplicit": false,
       "name": "scripts_pk",
       "table": "scripts",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "pathname"
-      ],
+      "columns": ["pathname"],
       "nameExplicit": false,
       "name": "scripts_pathname_unique",
       "entityType": "uniques",

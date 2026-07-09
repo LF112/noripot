@@ -172,12 +172,13 @@ export class NoriRuntime {
             console.error(`❌ [${pathname}] 自动重启失败:`, error);
           });
         }, delay);
-      } else {
+      } else if (MAX_RETRIES > 0) {
         console.error(
           `❌ [${pathname}] 连续崩溃超过 ${MAX_RETRIES} 次，停止自动重启！`,
         );
-        info.status = 'failed';
       }
+
+      info.status = 'failed';
     } else {
       // exitCode === 0 代表脚本正常执行完毕退出
       console.log(`✅ 实例 [${pathname}] 已正常运行结束。`);
