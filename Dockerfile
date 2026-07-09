@@ -22,7 +22,7 @@ FROM base AS install
 WORKDIR /temp
 
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install --production --frozen-lockfile
 
 FROM install AS db-generate
 WORKDIR /temp

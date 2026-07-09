@@ -1,0 +1,63 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "ecaf7610-3c6c-4771-a16a-d07bac2c39db",
+  "prevIds": [
+    "7beb441b-f1f7-4cb9-8b77-8de529f761c5"
+  ],
+  "ddl": [
+    {
+      "name": "scripts",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": "3",
+      "generated": null,
+      "name": "retry",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "cron",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pk",
+      "table": "scripts",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pathname_unique",
+      "entityType": "uniques",
+      "table": "scripts"
+    }
+  ],
+  "renames": []
+}

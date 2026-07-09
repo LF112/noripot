@@ -9,6 +9,13 @@ const noripot = new NoriPot();
 Bun.serve({
   port: 3001,
   routes: {
+    '/api/list': {
+      GET: async () => {
+        return Response.json({
+          data: await noripot.script.listScripts(),
+        });
+      },
+    },
     '/api/start': {
       POST: async (req) => {
         const data = (await req.json()) as { pathname: string };
@@ -26,7 +33,7 @@ Bun.serve({
         }
 
         return Response.json({
-          data: await noripot.script.listScripts(),
+          data: true,
         });
       },
     },

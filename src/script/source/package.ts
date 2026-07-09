@@ -1,5 +1,5 @@
 import * as path from 'node:path';
-import { NoriFile } from './file.ts';
+import { NoriFile } from './base.ts';
 
 export class ScriptPackage extends NoriFile {
   constructor() {

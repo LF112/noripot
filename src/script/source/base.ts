@@ -59,7 +59,7 @@ export class NoriFile {
    * 获取脚本的绝对路径
    * @param pathname 脚本相对路径
    * */
-  protected realpath(pathname: string): string {
+  realpath(pathname: string): string {
     const cached = this._cachePathname.get(pathname);
     if (cached) {
       return cached;
