@@ -82,7 +82,7 @@ export class NoriRuntime {
     // 拉起 Bun 子进程
     const proc = Bun.spawn(['bun', 'run', scriptPath], {
       cwd: scriptCwd,
-      env: { ...process.env },
+      env: { ...process.env, ...info.config.env },
       stdout: 'pipe',
       stderr: 'pipe',
     });

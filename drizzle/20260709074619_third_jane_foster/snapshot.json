@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "e6efabb2-5686-4a48-a334-342e907bee9e",
+  "id": "2c8369cb-736a-42a5-af73-e7e99b367727",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -32,11 +32,11 @@
     },
     {
       "type": "text",
-      "notNull": false,
+      "notNull": true,
       "autoincrement": false,
-      "default": null,
+      "default": "'{}'",
       "generated": null,
-      "name": "cron",
+      "name": "env",
       "entityType": "columns",
       "table": "scripts"
     },
