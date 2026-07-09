@@ -9,7 +9,8 @@ export type ProcessOptions = Omit<TScript, 'pathname'>;
 interface ProcessInfo {
   pathname: string; // 唯一
   process: Subprocess | null;
-  status: 'running' | 'stopped' | 'failed';
+  status: 'running' | 'restarting' | 'stopped' | 'failed';
+  restartTimer: ReturnType<typeof setTimeout> | null;
   retryCount: number; // 重启次数
   config: ProcessOptions; // 脚本配置
 }
@@ -45,6 +46,7 @@ export class NoriRuntime {
         pathname,
         process: null,
         status: 'stopped',
+        restartTimer: null,
         retryCount: 0,
         config: { ...omit(scriptOptions, 'pathname'), ...options },
       });
@@ -57,10 +59,29 @@ export class NoriRuntime {
       throw new Error('实例已经在运行中，无法重复启动');
     }
 
+    if (info.status === 'restarting') {
+      throw new Error('实例正在等待自动重启，无法重复启动');
+    }
+
+    info.retryCount = 0;
+    info.config = { ...omit(scriptOptions, 'pathname'), ...options };
+    await this.startProcess(pathname, info);
+  }
+
+  /**
+   * 拉起脚本子进程
+   * @param pathname 脚本路径
+   * @param info 进程信息
+   * */
+  private async startProcess(pathname: string, info: ProcessInfo) {
+    const scriptPath = this.script.realpath(pathname);
+    const scriptCwd = await this.script.getCwd(scriptPath);
+
     info.status = 'running';
 
     // 拉起 Bun 子进程
-    const proc = Bun.spawn(['bun', 'run', this.script.realpath(pathname)], {
+    const proc = Bun.spawn(['bun', 'run', scriptPath], {
+      cwd: scriptCwd,
       env: { ...process.env },
       stdout: 'pipe',
       stderr: 'pipe',
@@ -72,7 +93,15 @@ export class NoriRuntime {
     void this.streamLogger(pathname, proc.stderr, 'STDERR');
 
     // 监听进程
-    void this.monitorProcess(pathname, proc);
+    this.monitorProcess(pathname, proc).catch((error) => {
+      if (info.process === proc) {
+        info.process = null;
+        info.status = 'failed';
+      }
+      console.error(`❌ [${pathname}] 进程监控异常:`, error);
+    });
+
+    console.log(`🚀 实例 [${pathname}] 已启动，PID: ${proc.pid}`);
   }
 
   /**
@@ -81,13 +110,24 @@ export class NoriRuntime {
    * */
   async stop(pathname: string) {
     const info = this.processes.get(pathname);
-    if (info?.process) {
-      info.status = 'stopped';
-      info.retryCount = 0;
+    if (!info) {
+      return;
+    }
+
+    info.status = 'stopped';
+    info.retryCount = 0;
+
+    if (info.restartTimer) {
+      clearTimeout(info.restartTimer);
+      info.restartTimer = null;
+    }
+
+    if (info.process) {
       info.process.kill();
       info.process = null;
-      console.log(`🛑 实例 [${pathname}] 已手动停止`);
     }
+
+    console.log(`🛑 实例 [${pathname}] 已手动停止`);
   }
 
   /**
@@ -100,8 +140,10 @@ export class NoriRuntime {
     const exitCode = await proc.exited;
     const info = this.processes.get(pathname);
 
-    // 如果 info 不存在，或者用户手动触发了 stop，则不进行重启
-    if (!info || info.status === 'stopped') return;
+    // 如果 info 不存在、进程已被替换，或者用户手动触发了 stop，则不进行重启
+    if (!info || info.process !== proc || info.status === 'stopped') return;
+
+    info.process = null;
 
     // exitCode !== 0 代表进程异常崩溃
     if (exitCode !== 0) {
@@ -116,8 +158,19 @@ export class NoriRuntime {
           `🔄 [${pathname}] 将在 ${delay / 1000} 秒后尝试第 ${info.retryCount} 次自动重启...`,
         );
 
-        setTimeout(() => {
-          this.run(info.pathname);
+        info.status = 'restarting';
+        info.restartTimer = setTimeout(() => {
+          info.restartTimer = null;
+
+          if (info.status !== 'restarting' || info.process) {
+            return;
+          }
+
+          this.startProcess(info.pathname, info).catch((error) => {
+            info.status = 'failed';
+            info.process = null;
+            console.error(`❌ [${pathname}] 自动重启失败:`, error);
+          });
         }, delay);
       } else {
         console.error(

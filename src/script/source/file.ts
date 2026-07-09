@@ -1,4 +1,5 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import { NoriFile } from './base.ts';
 
 export class ScriptFile extends NoriFile {
@@ -47,5 +48,14 @@ export class ScriptFile extends NoriFile {
       }
     }
     return true;
+  }
+
+  /**
+   * 获取脚本运行目录
+   * @param pathname 脚本绝对路径
+   * */
+  async getCwd(pathname: string) {
+    const scriptStat = await stat(pathname);
+    return scriptStat.isDirectory() ? pathname : dirname(pathname);
   }
 }
