@@ -40,11 +40,17 @@ export class ScriptPackage extends NoriFile {
       return false;
     }
 
-    const install = Bun.spawn(['bun', 'install'], {
-      cwd: packageRoot,
-      stdout: 'inherit',
-      stderr: 'inherit',
-    });
+    // 执行安装依赖
+    // Bun 的 --filter 选项需要使用相对路径，并且路径分隔符必须是 /
+    const packageFilter = `./${path.relative(this.dir, packageRoot).split(path.sep).join('/')}`;
+    const install = Bun.spawn(
+      ['bun', 'install', '--filter', '!./', '--filter', packageFilter],
+      {
+        cwd: this.dir,
+        stdout: 'inherit',
+        stderr: 'inherit',
+      },
+    );
 
     const exitCode = await install.exited;
     if (exitCode !== 0) {

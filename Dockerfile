@@ -16,8 +16,8 @@ RUN mkdir -p \
     /noripot/projects/scripts
 
 
-RUN echo '{"name":"noripot-projects","private":true,"workspaces":["scripts/*","scripts/*/*"]}' > /noripot/projects/package.json
-RUN echo '[install]\nlinker = "isolated"\nregistry = "https://registry.npmmirror.com"' > /noripot/projects/bunfig.toml
+RUN echo '{"name":"noripot-projects","private":true,"workspaces":["scripts/**"]}' > /noripot/projects/package.json
+RUN echo '[install]\nlinker = "hoisted"\nregistry = "https://registry.npmmirror.com"' > /noripot/projects/bunfig.toml
 
 FROM base AS install
 WORKDIR /temp
