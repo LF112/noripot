@@ -5,15 +5,15 @@ services:
       dockerfile: Dockerfile
       target: release
     restart: unless-stopped
-    working_dir: /usr/src/app
+    working_dir: /noripot
 
     ports:
       - "4096:4096"
       - "3001:3001"
 
     volumes:
-      - ./noripot/runtime:/usr/src/app/runtime
-      - ./noripot/scripts:/usr/src/app/projects/scripts
+      - ./noripot/runtime:/noripot/runtime
+      - ./noripot/scripts:/noripot/projects/scripts
 
     environment:
       NODE_ENV: production

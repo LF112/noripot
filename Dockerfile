@@ -1,7 +1,7 @@
 FROM caddy:2 AS caddy-bin
 
 FROM oven/bun:1 AS base
-WORKDIR /usr/src/app
+WORKDIR /noripot
 
 # 复制 Caddy 二进制文件
 COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
@@ -11,12 +11,13 @@ RUN echo '[install]\nregistry = "https://registry.npmmirror.com"' > /root/.bunco
 
 # 初始化全局工作区环境
 RUN mkdir -p \
-    /usr/src/app/runtime \
-    /usr/src/app/projects/scripts
+    /noripot/_ \
+    /noripot/runtime \
+    /noripot/projects/scripts
 
 
-RUN echo '{"name":"noripot-projects","private":true,"workspaces":["scripts/*","scripts/*/*"]}' > /usr/src/app/projects/package.json
-RUN echo '[install]\nlinker = "isolated"\nregistry = "https://registry.npmmirror.com"' > /usr/src/app/projects/bunfig.toml
+RUN echo '{"name":"noripot-projects","private":true,"workspaces":["scripts/*","scripts/*/*"]}' > /noripot/projects/package.json
+RUN echo '[install]\nlinker = "isolated"\nregistry = "https://registry.npmmirror.com"' > /noripot/projects/bunfig.toml
 
 FROM base AS install
 WORKDIR /temp
@@ -35,20 +36,20 @@ RUN bun run gen:db
 FROM base AS release
 
 # node_modules
-COPY --from=install /temp/node_modules /usr/src/app/node_modules
+COPY --from=install /temp/node_modules /noripot/_/node_modules
 
 # database migrations
-COPY --from=db-generate /temp/drizzle /usr/src/app/drizzle
+COPY --from=db-generate /temp/drizzle /noripot/_/drizzle
 
 # app source
-COPY index.ts /usr/src/app
-COPY ./src/ /usr/src/app/src
+COPY index.ts /noripot/_
+COPY ./src/ /noripot/_/src
 
 # projects workspace
-COPY --from=base /usr/src/app/projects /usr/src/app/projects
+COPY --from=base /noripot/projects /noripot/projects
 
 # permissions
-RUN chown -R bun:bun /usr/src/app
+RUN chown -R bun:bun /noripot
 
 COPY Caddyfile /etc/caddy/Caddyfile
 
@@ -58,4 +59,4 @@ EXPOSE 4096 3001
 
 USER bun
 
-ENTRYPOINT ["bun", "run", "/usr/src/app/index.ts"]
+ENTRYPOINT ["bun", "run", "/noripot/_/index.ts"]
