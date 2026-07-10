@@ -1,7 +1,7 @@
 {
-    admin "unix//run/caddy/admin.sock"
+    admin "unix/{$CADDY_ADMIN_SOCKET}"
 }
 
-:4096 {
+:{$CADDY_PORT} {
     respond "Bun Gateway is running, but no routes configured yet." 200
 }

@@ -6,6 +6,9 @@ WORKDIR /noripot
 # 复制 Caddy 二进制文件
 COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
 
+ENV CADDY_ADMIN_SOCKET=/run/caddy/admin.sock \
+    CADDY_PORT=4096
+
 # 设置依赖镜像源
 RUN echo '[install]\nregistry = "https://registry.npmmirror.com"' > /root/.bunconfig.toml
 

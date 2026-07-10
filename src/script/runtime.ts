@@ -1,7 +1,8 @@
 import type { Subprocess } from 'bun';
+import { asc, eq } from 'drizzle-orm';
 import { omit } from 'underscore';
 import { db } from '../db';
-import type { TScript } from '../db/schema';
+import { gateway, type TScript } from '../db/schema';
 import type { NoriScript } from './index.ts';
 
 export type ProcessOptions = Omit<TScript, 'pathname'>;
@@ -76,13 +77,25 @@ export class NoriRuntime {
   private async startProcess(pathname: string, info: ProcessInfo) {
     const scriptPath = this.script.realpath(pathname);
     const scriptCwd = await this.script.getCwd(scriptPath);
+    const scriptGateway = await db
+      .select({ port: gateway.port })
+      .from(gateway)
+      .where(eq(gateway.pathname, pathname))
+      .orderBy(asc(gateway.id))
+      .limit(1)
+      .get();
+
+    const env = { ...process.env, ...info.config.env };
+    if (scriptGateway) {
+      env.PORT = String(scriptGateway.port);
+    }
 
     info.status = 'running';
 
     // 拉起 Bun 子进程
     const proc = Bun.spawn(['bun', 'run', scriptPath], {
       cwd: scriptCwd,
-      env: { ...process.env, ...info.config.env },
+      env,
       stdout: 'pipe',
       stderr: 'pipe',
     });

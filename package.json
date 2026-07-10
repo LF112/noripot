@@ -10,7 +10,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.2",
     "@types/bun": "latest",
-    "@types/underscore": "^1.13.0"
+    "@types/underscore": "^1.13.0",
+    "caddy-json-types": "^1.0.4"
   },
   "peerDependencies": {
     "typescript": "^5"

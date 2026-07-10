@@ -1,0 +1,173 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "cb30fcfe-0be4-486a-870a-a57b69aa929b",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "name": "gateway",
+      "entityType": "tables"
+    },
+    {
+      "name": "scripts",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "port",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "path",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "-1",
+      "generated": null,
+      "name": "retry",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "env",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "tableTo": "scripts",
+      "columnsTo": [
+        "pathname"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_gateway_pathname_scripts_pathname_fk",
+      "entityType": "fks",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "gateway_pk",
+      "table": "gateway",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pk",
+      "table": "scripts",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "pathname",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_script_pathname_idx",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "port",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_port_unique",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "path",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_path_unique",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pathname_unique",
+      "entityType": "uniques",
+      "table": "scripts"
+    }
+  ],
+  "renames": []
+}

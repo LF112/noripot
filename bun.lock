@@ -5,6 +5,7 @@
     "": {
       "name": "noripot",
       "dependencies": {
+        "drizzle-kit": "^1.0.0-rc.4",
         "drizzle-orm": "^1.0.0-rc.4",
         "underscore": "^1.13.8",
       },
@@ -12,7 +13,7 @@
         "@biomejs/biome": "2.5.2",
         "@types/bun": "latest",
         "@types/underscore": "^1.13.0",
-        "drizzle-kit": "^1.0.0-rc.4",
+        "caddy-json-types": "^1.0.4",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -101,6 +102,8 @@
     "@types/underscore": ["@types/underscore@1.13.0", "", {}, "sha512-L6LBgy1f0EFQZ+7uSA57+n2g/s4Qs5r06Vwrwn0/nuK1de+adz00NWaztRQ30aEqw5qOaWbPI8u2cGQ52lj6VA=="],
 
     "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
+
+    "caddy-json-types": ["caddy-json-types@1.0.4", "", {}, "sha512-N5/+J/oejkxtbkRRvs72ZGFKwjiBgAbP19V2AoS14ZYUFA9IcXCR2dal5MRIkkxkwzG2E5chKfiyOwwU8mPl/A=="],
 
     "drizzle-kit": ["drizzle-kit@1.0.0-rc.4", "", { "dependencies": { "@drizzle-team/brocli": "^0.12.0", "@js-temporal/polyfill": "^0.5.1", "esbuild": "^0.25.10", "get-tsconfig": "^4.13.6", "jiti": "^2.6.1" }, "bin": { "drizzle-kit": "bin.cjs" } }, "sha512-KZCpjRyu+oYHLj/UJogfFlOkWhHVkaEI2EOT1U3NDVXUzLoTyPjqwFxwOrlQxsY6jzRyxcz4EacqboGfhEeYrA=="],
 
