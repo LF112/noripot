@@ -1,9 +1,14 @@
 import type { Subprocess } from 'bun';
 import type { IConfig } from 'caddy-json-types';
+import { logger } from '../logger';
 
 type CaddyStatus = 'running' | 'stopped' | 'failed';
 
 export class GatewayCaddy {
+  private l = logger.with('caddy');
+  private _stderr = this.l.tags('STDERR');
+  private _stdout = this.l.tags('STDOUT');
+
   private process: Subprocess | null = null; // Caddy 进程实例
 
   private status: CaddyStatus = 'stopped'; // Caddy 状态
@@ -80,7 +85,7 @@ export class GatewayCaddy {
     try {
       await this.waitForAdmin(proc);
       await this.reload();
-      console.log(`Caddy 已启动，PID: ${proc.pid}`);
+      this.l.success(`Caddy 已启动，PID: ${proc.pid}`);
     } catch (error) {
       await this.stop();
       throw error;
@@ -166,7 +171,7 @@ export class GatewayCaddy {
 
     this.process = null;
     this.status = exitCode === 0 ? 'stopped' : 'failed';
-    console.error(`Caddy 已退出，退出码: ${exitCode}`);
+    this.l.error(`Caddy 已退出，退出码: ${exitCode}`);
   }
 
   /**
@@ -195,15 +200,56 @@ export class GatewayCaddy {
         for (const line of decoder
           .decode(value, { stream: true })
           .split('\n')) {
-          if (line.trim()) {
-            console.log(`[${type}][caddy] ${line}`);
-          }
+          this.parseCaddyLog(type, line.trim());
         }
       }
     } catch (error) {
-      console.error(`Caddy ${type} 日志流读取异常:`, error);
+      this.l.error(`Caddy ${type} 日志流读取异常:`, error);
     } finally {
       reader.releaseLock();
+    }
+  }
+
+  private parseCaddyLog(type: 'STDOUT' | 'STDERR', content: string) {
+    if (!content) {
+      return;
+    }
+
+    const log = type === 'STDOUT' ? this._stdout : this._stderr;
+
+    try {
+      const {
+        level,
+        ts: _,
+        ...values
+      } = JSON.parse(content) as {
+        level?: 'info' | 'warn' | 'error' | 'debug' | 'panic' | 'fatal';
+        ts?: number;
+      };
+
+      const logs = JSON.stringify(values);
+      switch (level) {
+        case 'error':
+        case 'fatal':
+          log.error(logs);
+          break;
+        case 'warn':
+          log.warn(logs);
+          break;
+        case 'info':
+          log.info(logs);
+          break;
+        case 'debug':
+          log.debug(logs);
+          break;
+        case 'panic':
+          log.error('Caddy PANIC:', logs);
+          break;
+        default:
+          log.log(logs);
+      }
+    } catch {
+      log.log(content);
     }
   }
 

@@ -1,4 +1,5 @@
 import { NoriGateway } from './src/gateway';
+import { logger } from './src/logger';
 import { NoriScript } from './src/script';
 
 class NoriPot {
@@ -13,13 +14,12 @@ class NoriPot {
   }
 
   public async bootstrap() {
-    console.log('🐾 NoriPot 正在运行中...');
     try {
-      console.log('|- 正在启动网关...');
+      logger.log('正在启动网关...');
       await this.gateway.start();
-      console.log('|- 网关启动成功 ✅');
+      logger.log('网关启动成功 ✅');
     } catch {
-      console.log('|- 网关启动失败 ❌');
+      logger.log('网关启动失败 ❌');
     }
 
     // HTTP SERVER
@@ -33,20 +33,35 @@ class NoriPot {
             });
           },
         },
-        '/api/start': {
+        '/api/create': {
           POST: async (req) => {
             const data = (await req.json()) as { pathname: string };
 
             try {
               await noripot.script.create(data.pathname);
-            } catch (e) {
-              console.log((e as Error).message);
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
             }
+
+            return Response.json({
+              data: true,
+            });
+          },
+        },
+        '/api/start': {
+          POST: async (req) => {
+            const data = (await req.json()) as { pathname: string };
 
             try {
               await noripot.script.run(data.pathname);
-            } catch (e) {
-              console.log((e as Error).message);
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
             }
 
             return Response.json({
@@ -60,8 +75,11 @@ class NoriPot {
 
             try {
               await noripot.script.stop(data.pathname);
-            } catch (e) {
-              console.log((e as Error).message);
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
             }
 
             return Response.json({
@@ -127,20 +145,21 @@ class NoriPot {
       },
     });
 
-    console.log(`🐾 NoriPot 已就绪！`);
+    logger.log(`🐾 NoriPot 已就绪！`);
   }
 
   private async shutdown(signal: NodeJS.Signals) {
-    console.log(`🐾 NoriPot 收到 ${signal} 信号，正在关闭...`);
+    logger.log(`🐾 NoriPot 收到 ${signal} 信号，正在关闭...`);
 
     if (this.server) {
-      console.log('|- 正在关闭 HTTP 服务...');
+      logger.log('正在关闭 HTTP 服务...');
       await this.server.stop(true);
     }
 
-    console.log('|- 正在关闭网关...');
+    logger.log('正在关闭网关...');
     await noripot.gateway.stop();
 
+    logger.close();
     process.exit(0);
   }
 }

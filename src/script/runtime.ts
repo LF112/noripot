@@ -3,6 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import { omit } from 'underscore';
 import { db } from '../db';
 import { gateway, type TScript } from '../db/schema';
+import { logger } from '../logger';
 import type { NoriScript } from './index.ts';
 
 export type ProcessOptions = Omit<TScript, 'pathname'>;
@@ -17,6 +18,8 @@ interface ProcessInfo {
 }
 
 export class NoriRuntime {
+  private l = logger.with('runtime');
+
   private processes = new Map<string, ProcessInfo>();
 
   constructor(private script: NoriScript) {}
@@ -111,10 +114,10 @@ export class NoriRuntime {
         info.process = null;
         info.status = 'failed';
       }
-      console.error(`❌ [${pathname}] 进程监控异常:`, error);
+      this.l.error(`❌ [${pathname}] 进程监控异常:`, error);
     });
 
-    console.log(`🚀 实例 [${pathname}] 已启动，PID: ${proc.pid}`);
+    this.l.log(`🚀 实例 [${pathname}] 已启动，PID: ${proc.pid}`);
   }
 
   /**
@@ -140,7 +143,7 @@ export class NoriRuntime {
       info.process = null;
     }
 
-    console.log(`🛑 实例 [${pathname}] 已手动停止`);
+    this.l.log(`🛑 实例 [${pathname}] 已手动停止`);
   }
 
   /**
@@ -160,14 +163,14 @@ export class NoriRuntime {
 
     // exitCode !== 0 代表进程异常崩溃
     if (exitCode !== 0) {
-      console.error(`🚨 实例 [${pathname}] 异常崩溃，退出码: ${exitCode}`);
+      this.l.error(`🚨 实例 [${pathname}] 异常崩溃，退出码: ${exitCode}`);
 
       const MAX_RETRIES = info.config.retry;
       if (info.retryCount < MAX_RETRIES) {
         info.retryCount++;
         const delay = info.retryCount * 1000;
 
-        console.log(
+        this.l.log(
           `🔄 [${pathname}] 将在 ${delay / 1000} 秒后尝试第 ${info.retryCount} 次自动重启...`,
         );
 
@@ -182,11 +185,11 @@ export class NoriRuntime {
           this.startProcess(info.pathname, info).catch((error) => {
             info.status = 'failed';
             info.process = null;
-            console.error(`❌ [${pathname}] 自动重启失败:`, error);
+            this.l.error(`❌ [${pathname}] 自动重启失败:`, error);
           });
         }, delay);
       } else if (MAX_RETRIES > 0) {
-        console.error(
+        this.l.error(
           `❌ [${pathname}] 连续崩溃超过 ${MAX_RETRIES} 次，停止自动重启！`,
         );
       }
@@ -194,7 +197,7 @@ export class NoriRuntime {
       info.status = 'failed';
     } else {
       // exitCode === 0 代表脚本正常执行完毕退出
-      console.log(`✅ 实例 [${pathname}] 已正常运行结束。`);
+      this.l.log(`✅ 实例 [${pathname}] 已正常运行结束。`);
       info.status = 'stopped';
       info.retryCount = 0; // 正常退出时重置计数器
     }
@@ -232,7 +235,7 @@ export class NoriRuntime {
         this.handleLogOutput(pathname, type, text);
       }
     } catch (error) {
-      console.error(`[${pathname}] 的 ${type} 日志流读取异常:`, error);
+      this.l.error(`[${pathname}] 的 ${type} 日志流读取异常:`, error);
     } finally {
       reader.releaseLock();
     }
@@ -249,22 +252,22 @@ export class NoriRuntime {
     type: 'STDOUT' | 'STDERR',
     rawText: string,
   ) {
+    const log = this.l.tags(type, pathname);
+
     // 按换行符切分
     const lines = rawText.split('\n');
 
     for (const line of lines) {
       if (line.trim() === '') continue; // 跳过空行
 
-      const logEntry = {
-        pathname,
-        type, // STDOUT 正常日志，STDERR 错误/异常日志
-        time: new Date().toISOString(),
-        message: line,
-      };
-
-      console.log(
-        `[${logEntry.type}][${logEntry.pathname}] ${logEntry.message}`,
-      );
+      switch (type) {
+        case 'STDOUT':
+          log.log(line);
+          break;
+        case 'STDERR':
+          log.error(line);
+          break;
+      }
     }
   }
 }

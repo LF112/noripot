@@ -1,7 +1,10 @@
 import * as path from 'node:path';
+import { logger } from '../../logger';
 import { NoriFile } from './base.ts';
 
 export class ScriptPackage extends NoriFile {
+  private l = logger.with('package');
+
   constructor() {
     super('projects');
   }
@@ -25,7 +28,7 @@ export class ScriptPackage extends NoriFile {
 
     // 如果是文件那就跳过
     if (unitStat.isFile()) {
-      console.log('文件无需安装依赖');
+      this.l.log(`${pathname} 无需安装依赖`);
       return false;
     }
 
@@ -36,7 +39,7 @@ export class ScriptPackage extends NoriFile {
     );
 
     if (!packageRoot) {
-      console.log('未找到 package.json，跳过安装依赖');
+      this.l.log(`未找到 ${pathname} package.json，跳过安装依赖`);
       return false;
     }
 

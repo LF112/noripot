@@ -1,13 +1,17 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "cb30fcfe-0be4-486a-870a-a57b69aa929b",
+  "id": "c5d35849-dde3-4eb7-994a-600e5807d5cc",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
       "name": "gateway",
+      "entityType": "tables"
+    },
+    {
+      "name": "logs",
       "entityType": "tables"
     },
     {
@@ -53,6 +57,66 @@
       "name": "path",
       "entityType": "columns",
       "table": "gateway"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "context",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "level",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "tags",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "content",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "logs"
     },
     {
       "type": "text",
@@ -110,6 +174,15 @@
     },
     {
       "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "logs_pk",
+      "table": "logs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
         "pathname"
       ],
       "nameExplicit": false,
@@ -158,6 +231,34 @@
       "name": "gateway_path_unique",
       "entityType": "indexes",
       "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "context",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "logs_context_idx",
+      "entityType": "indexes",
+      "table": "logs"
+    },
+    {
+      "columns": [
+        {
+          "value": "created_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "logs_created_at_idx",
+      "entityType": "indexes",
+      "table": "logs"
     },
     {
       "columns": [
