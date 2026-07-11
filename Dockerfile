@@ -3,6 +3,12 @@ FROM caddy:2 AS caddy-bin
 FROM oven/bun:1 AS base
 WORKDIR /noripot
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # 复制 Caddy 二进制文件
 COPY --from=caddy-bin /usr/bin/caddy /usr/bin/caddy
 
@@ -62,4 +68,4 @@ EXPOSE 4096 3001
 
 USER bun
 
-ENTRYPOINT ["bun", "run", "/noripot/_/index.ts"]
+ENTRYPOINT ["bun", "run", "/noripot/_/git.ts"]

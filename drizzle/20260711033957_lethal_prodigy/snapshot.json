@@ -1,13 +1,17 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "c5d35849-dde3-4eb7-994a-600e5807d5cc",
+  "id": "9e45718c-d311-4528-bac6-a9d2e9a1e7d4",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
       "name": "gateway",
+      "entityType": "tables"
+    },
+    {
+      "name": "git_sources",
       "entityType": "tables"
     },
     {
@@ -57,6 +61,46 @@
       "name": "path",
       "entityType": "columns",
       "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "url",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "branch",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "token",
+      "entityType": "columns",
+      "table": "git_sources"
     },
     {
       "type": "integer",
@@ -165,11 +209,35 @@
     },
     {
       "columns": [
+        "pathname"
+      ],
+      "tableTo": "scripts",
+      "columnsTo": [
+        "pathname"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_git_sources_pathname_scripts_pathname_fk",
+      "entityType": "fks",
+      "table": "git_sources"
+    },
+    {
+      "columns": [
         "id"
       ],
       "nameExplicit": false,
       "name": "gateway_pk",
       "table": "gateway",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "git_sources_pk",
+      "table": "git_sources",
       "entityType": "pks"
     },
     {
@@ -231,6 +299,20 @@
       "name": "gateway_path_unique",
       "entityType": "indexes",
       "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "url",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "git_sources_url_unique",
+      "entityType": "indexes",
+      "table": "git_sources"
     },
     {
       "columns": [

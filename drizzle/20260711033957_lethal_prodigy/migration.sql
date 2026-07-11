@@ -6,6 +6,14 @@ CREATE TABLE `gateway` (
 	CONSTRAINT `fk_gateway_pathname_scripts_pathname_fk` FOREIGN KEY (`pathname`) REFERENCES `scripts`(`pathname`) ON DELETE CASCADE
 );
 --> statement-breakpoint
+CREATE TABLE `git_sources` (
+	`pathname` text PRIMARY KEY,
+	`url` text NOT NULL,
+	`branch` text,
+	`token` text,
+	CONSTRAINT `fk_git_sources_pathname_scripts_pathname_fk` FOREIGN KEY (`pathname`) REFERENCES `scripts`(`pathname`) ON DELETE CASCADE
+);
+--> statement-breakpoint
 CREATE TABLE `logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT,
 	`context` text NOT NULL,
@@ -24,5 +32,6 @@ CREATE TABLE `scripts` (
 CREATE INDEX `gateway_script_pathname_idx` ON `gateway` (`pathname`);--> statement-breakpoint
 CREATE UNIQUE INDEX `gateway_port_unique` ON `gateway` (`port`);--> statement-breakpoint
 CREATE UNIQUE INDEX `gateway_path_unique` ON `gateway` (`path`);--> statement-breakpoint
+CREATE UNIQUE INDEX `git_sources_url_unique` ON `git_sources` (`url`);--> statement-breakpoint
 CREATE INDEX `logs_context_idx` ON `logs` (`context`);--> statement-breakpoint
 CREATE INDEX `logs_created_at_idx` ON `logs` (`created_at`);

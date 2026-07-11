@@ -12,6 +12,9 @@ const initDB = async () => {
     create: true,
   });
 
+  // 启用外键约束
+  sqlite.run('PRAGMA foreign_keys = ON');
+
   db = drizzle({ client: sqlite, relations });
 
   // 执行迁移 / 初始化

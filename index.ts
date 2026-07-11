@@ -1,12 +1,14 @@
 import { NoriGateway } from './src/gateway';
 import { logger } from './src/logger';
 import { NoriScript } from './src/script';
+import { GitSource, type GitSourceOptions } from './src/script/source/git.ts';
 
 class NoriPot {
   private server: ReturnType<typeof Bun.serve> | null = null;
 
   public script = new NoriScript();
   public gateway = new NoriGateway();
+  public git = new GitSource();
 
   constructor() {
     process.once('SIGINT', () => void this.shutdown('SIGINT'));
@@ -135,6 +137,125 @@ class NoriPot {
               return Response.json(
                 { error: (error as Error).message },
                 { status: 503 },
+              );
+            }
+          },
+        },
+        // 获取 Git 仓库列表
+        '/api/git/list': {
+          GET: async () => {
+            const sources = await noripot.git.list();
+            return Response.json({
+              data: sources,
+            });
+          },
+        },
+        // 获取 Git 仓库配置
+        '/api/git/get': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { pathname: string };
+              const source = await noripot.git.get(data.pathname);
+              if (!source) {
+                return Response.json(
+                  { error: 'Git 仓库不存在' },
+                  { status: 404 },
+                );
+              }
+              return Response.json({
+                data: source,
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        // 新增或更新 Git 仓库配置
+        '/api/git/upsert': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as GitSourceOptions;
+              const source = await noripot.git.upsert(data);
+              return Response.json({ data: source }, { status: 201 });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        // 删除 Git 仓库配置
+        '/api/git/remove': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { pathname: string };
+              const source = await noripot.git.remove(data.pathname);
+              return Response.json({
+                data: source,
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        // 强制同步 Git 仓库代码
+        '/api/git/pull': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { pathname: string };
+              const source = await noripot.git.pull(data.pathname);
+              return Response.json({
+                data: source,
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        // 获取已配置仓库的远端分支列表
+        '/api/git/branch/list': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { pathname: string };
+              return Response.json({
+                data: await noripot.git.listBranches(data.pathname),
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        // 获取远端仓库的分支列表
+        '/api/git/branch/remote/list': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as {
+                url: string;
+                token?: string;
+              };
+              return Response.json({
+                data: await noripot.git.listRemoteBranches(
+                  data.url,
+                  data.token,
+                ),
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
               );
             }
           },
