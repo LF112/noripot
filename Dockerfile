@@ -68,4 +68,4 @@ EXPOSE 4096 3001
 
 USER bun
 
-ENTRYPOINT ["bun", "run", "/noripot/_/git.ts"]
+ENTRYPOINT ["bun", "run", "/noripot/_/index.ts"]

@@ -1,0 +1,14 @@
+services:
+  noripot:
+    entrypoint:
+      - bun
+      - --watch
+      - run
+      - /noripot/_/dev/index.ts
+
+    volumes:
+      - .:/noripot/_/dev:ro
+      - /noripot/_/dev/node_modules
+
+    environment:
+      NODE_ENV: development
