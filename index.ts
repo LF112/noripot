@@ -1,7 +1,7 @@
 import { type CronUpsertOptions, NoriCronJob } from './src/cron';
 import { NoriGateway } from './src/gateway';
 import { logger } from './src/logger';
-import { NoriScript } from './src/script';
+import { NoriScript, type ScriptUpdateOptions } from './src/script';
 import { GitSource, type GitSourceOptions } from './src/script/source/git.ts';
 
 class NoriPot {
@@ -18,6 +18,12 @@ class NoriPot {
   }
 
   public async bootstrap() {
+    logger.log('正在扫描脚本...');
+    const { created, deleted } = await this.script.sync();
+    logger.log(
+      `脚本扫描完成：新增 ${created.length} 个，删除 ${deleted.length} 个 ✅`,
+    );
+
     try {
       logger.log('正在启动网关...');
       await this.gateway.start();
@@ -41,22 +47,39 @@ class NoriPot {
             });
           },
         },
-        '/api/create': {
-          POST: async (req) => {
-            const data = (await req.json()) as { pathname: string };
-
+        '/api/sync': {
+          POST: async () => {
             try {
-              await noripot.script.create(data.pathname);
+              const result = await noripot.script.sync();
+              if (result.deleted.length > 0) {
+                await noripot.gateway.reload();
+              }
+              return Response.json({ data: result });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 500 },
+              );
+            }
+          },
+        },
+        '/api/update': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as ScriptUpdateOptions & {
+                pathname: string;
+              };
+              const script = await noripot.script.update(data.pathname, {
+                retry: data.retry,
+                env: data.env,
+              });
+              return Response.json({ data: script });
             } catch (error) {
               return Response.json(
                 { error: (error as Error).message },
                 { status: 400 },
               );
             }
-
-            return Response.json({
-              data: true,
-            });
           },
         },
         '/api/start': {

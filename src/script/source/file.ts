@@ -4,7 +4,6 @@ import { NoriFile } from './base.ts';
 
 export class ScriptFile extends NoriFile {
   public ALLOW_SCRIPT_SUFFIX = ['.ts'];
-  private allowedPathname = new Set<string>(); // 允许的路径
 
   constructor() {
     super('projects/scripts');
@@ -20,21 +19,24 @@ export class ScriptFile extends NoriFile {
       for (const dirent of await readdir(this.dir, { withFileTypes: true })) {
         const pathname = dirent.name;
 
-        if (
+        const isAllowedFile =
           dirent.isFile() &&
-          !this.ALLOW_SCRIPT_SUFFIX.some((suffix) => pathname.endsWith(suffix))
-        ) {
+          this.ALLOW_SCRIPT_SUFFIX.some((suffix) => pathname.endsWith(suffix));
+
+        if (!dirent.isDirectory() && !isAllowedFile) {
           continue;
         }
 
-        this.allowedPathname.add(pathname);
         files.push(pathname);
       }
-    } catch {
-      return [];
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return [];
+      }
+      throw error;
     }
 
-    return files;
+    return files.sort((a, b) => a.localeCompare(b));
   }
 
   /**
@@ -42,12 +44,7 @@ export class ScriptFile extends NoriFile {
    * @param pathname 路径
    * */
   async checkPathname(pathname: string) {
-    if (!this.allowedPathname.has(pathname)) {
-      if (!(await this.listScripts()).includes(pathname)) {
-        return false;
-      }
-    }
-    return true;
+    return (await this.listScripts()).includes(pathname);
   }
 
   /**
