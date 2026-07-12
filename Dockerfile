@@ -18,10 +18,11 @@ ENV CADDY_ADMIN_SOCKET=/run/caddy/admin.sock \
 # 设置依赖镜像源
 RUN echo '[install]\nregistry = "https://registry.npmmirror.com"' > /root/.bunconfig.toml
 
-# 初始化全局工作区环境
-RUN mkdir -p \
+# 初始化运行时可写目录，并在创建时直接设置所有权
+RUN install -d -o bun -g bun \
     /noripot/_ \
     /noripot/runtime \
+    /noripot/projects \
     /noripot/projects/scripts
 
 
@@ -45,25 +46,23 @@ RUN bun run gen:db
 FROM base AS release
 
 # node_modules
-COPY --from=install /temp/node_modules /noripot/_/node_modules
+COPY --chown=bun:bun --from=install /temp/node_modules /noripot/_/node_modules
 
 # database migrations
-COPY --from=db-generate /temp/drizzle /noripot/_/drizzle
+COPY --chown=bun:bun --from=db-generate /temp/drizzle /noripot/_/drizzle
 
 # app source
-COPY index.ts /noripot/_
-COPY ./src/ /noripot/_/src
-COPY ./src-ui/ /noripot/_/src-ui
+COPY --chown=bun:bun index.ts /noripot/_
+COPY --chown=bun:bun ./src/ /noripot/_/src
+COPY --chown=bun:bun ./src-ui/ /noripot/_/src-ui
 
 # projects workspace
-COPY --from=base /noripot/projects /noripot/projects
+COPY --chown=bun:bun --from=base /noripot/projects /noripot/projects
 
-# permissions
-RUN chown -R bun:bun /noripot
+RUN install -d -m 755 /etc/caddy
+COPY --chown=bun:bun --chmod=644 Caddyfile /etc/caddy/Caddyfile
 
-COPY Caddyfile /etc/caddy/Caddyfile
-
-RUN mkdir -p /run/caddy && chown -R bun:bun /run/caddy
+RUN install -d -o bun -g bun /run/caddy
 
 EXPOSE 4096 2048
 
