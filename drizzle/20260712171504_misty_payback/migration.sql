@@ -1,0 +1,1 @@
+ALTER TABLE `git_sources` ADD `proxy` text;

@@ -40,6 +40,7 @@ export interface RepositoryRecord {
   pathname: string;
   url: string;
   branch: string | null;
+  proxy: string | null;
   commitHash: string | null;
   commitMessage: string | null;
   updatedAt: string | null;

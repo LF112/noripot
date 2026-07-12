@@ -1,0 +1,449 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "df31c3a4-547f-4696-85c9-33292ed647b1",
+  "prevIds": [
+    "77f7175e-b84b-4b54-a669-bbd5f4ba4141"
+  ],
+  "ddl": [
+    {
+      "name": "cron",
+      "entityType": "tables"
+    },
+    {
+      "name": "gateway",
+      "entityType": "tables"
+    },
+    {
+      "name": "git_sources",
+      "entityType": "tables"
+    },
+    {
+      "name": "logs",
+      "entityType": "tables"
+    },
+    {
+      "name": "scripts",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "cron",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "type",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "config",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "port",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "path",
+      "entityType": "columns",
+      "table": "gateway"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "url",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "branch",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "token",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "proxy",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "commit_hash",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "commit_message",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "context",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "level",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "tags",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "content",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "logs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "pathname",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "-1",
+      "generated": null,
+      "name": "retry",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "env",
+      "entityType": "columns",
+      "table": "scripts"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "tableTo": "scripts",
+      "columnsTo": [
+        "pathname"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_gateway_pathname_scripts_pathname_fk",
+      "entityType": "fks",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "tableTo": "scripts",
+      "columnsTo": [
+        "pathname"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_git_sources_pathname_scripts_pathname_fk",
+      "entityType": "fks",
+      "table": "git_sources"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "cron_pk",
+      "table": "cron",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "gateway_pk",
+      "table": "gateway",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "git_sources_pk",
+      "table": "git_sources",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "logs_pk",
+      "table": "logs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pk",
+      "table": "scripts",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "pathname",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_script_pathname_idx",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "port",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_port_unique",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "path",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "gateway_path_unique",
+      "entityType": "indexes",
+      "table": "gateway"
+    },
+    {
+      "columns": [
+        {
+          "value": "url",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "git_sources_url_unique",
+      "entityType": "indexes",
+      "table": "git_sources"
+    },
+    {
+      "columns": [
+        {
+          "value": "context",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "logs_context_idx",
+      "entityType": "indexes",
+      "table": "logs"
+    },
+    {
+      "columns": [
+        {
+          "value": "created_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "logs_created_at_idx",
+      "entityType": "indexes",
+      "table": "logs"
+    },
+    {
+      "columns": [
+        "pathname"
+      ],
+      "nameExplicit": false,
+      "name": "scripts_pathname_unique",
+      "entityType": "uniques",
+      "table": "scripts"
+    }
+  ],
+  "renames": []
+}

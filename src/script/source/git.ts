@@ -11,6 +11,14 @@ export interface GitSourceOptions {
   url: string;
   branch?: string | null;
   token?: string | null;
+  proxy?: string | null;
+}
+
+export interface GitProxyTestOptions {
+  pathname?: string;
+  url: string;
+  token?: string | null;
+  proxy?: string | null;
 }
 
 export class GitSource extends NoriFile {
@@ -54,7 +62,11 @@ export class GitSource extends NoriFile {
     const branch = isUndefined(options.branch)
       ? (current?.branch ?? null)
       : options.branch;
+    const proxy = isUndefined(options.proxy)
+      ? (current?.proxy ?? null)
+      : this.normalizeProxy(options.proxy);
     this.assertToken(token ?? undefined, url);
+    this.assertProxy(proxy, url);
 
     // 获取脚本配置
     const script = await db.query.scripts.findFirst({ where: { pathname } });
@@ -67,7 +79,7 @@ export class GitSource extends NoriFile {
 
     // 检查远端分支是否存在
     if (branch) {
-      await this.assertRemoteBranch(url, token ?? undefined, branch);
+      await this.assertRemoteBranch(url, token ?? undefined, branch, proxy);
     }
 
     // DATABASE
@@ -76,6 +88,7 @@ export class GitSource extends NoriFile {
       url,
       branch,
       token,
+      proxy,
       commitHash: current?.commitHash ?? null,
       commitMessage: current?.commitMessage ?? null,
       updatedAt: current?.updatedAt ?? null,
@@ -85,7 +98,7 @@ export class GitSource extends NoriFile {
     if (current) {
       return db
         .update(gitSources)
-        .set({ url, branch, token })
+        .set({ url, branch, token, proxy })
         .where(eq(gitSources.pathname, pathname))
         .returning()
         .get();
@@ -149,7 +162,11 @@ export class GitSource extends NoriFile {
    * */
   async listBranches(pathname: string) {
     const source = await this.requireSource(pathname);
-    return this.listRemoteBranches(source.url, source.token ?? undefined);
+    return this.listRemoteBranches(
+      source.url,
+      source.token ?? undefined,
+      source.proxy,
+    );
   }
 
   /**
@@ -157,14 +174,17 @@ export class GitSource extends NoriFile {
    * @param url Git 仓库地址
    * @param token Personal Access Token
    * */
-  async listRemoteBranches(url: string, token?: string) {
+  async listRemoteBranches(url: string, token?: string, proxy?: string | null) {
     const cleanUrl = this.normalizeUrl(url);
+    const cleanProxy = this.normalizeProxy(proxy);
     this.assertToken(token, cleanUrl);
+    this.assertProxy(cleanProxy, cleanUrl);
     const authenticatedUrl = this.withToken(cleanUrl, token);
     const output = await this.git(
       ['ls-remote', '--heads', authenticatedUrl],
       this.dir,
       token,
+      cleanProxy,
     );
 
     return output
@@ -172,6 +192,34 @@ export class GitSource extends NoriFile {
       .map((line) => line.match(/\trefs\/heads\/(.+)$/)?.[1])
       .filter((branch): branch is string => Boolean(branch))
       .sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
+   * 测试代理能否访问指定 Git 仓库
+   * @param options Git 仓库及代理配置
+   * */
+  async testProxy(options: GitProxyTestOptions) {
+    const url = this.normalizeUrl(options.url);
+    const proxy = this.normalizeProxy(options.proxy);
+    if (!proxy) throw new Error('Git 代理地址不能为空');
+
+    const current = options.pathname
+      ? await this.get(options.pathname)
+      : undefined;
+    const token = isUndefined(options.token)
+      ? (current?.token ?? undefined)
+      : (options.token ?? undefined);
+    this.assertToken(token, url);
+    this.assertProxy(proxy, url);
+
+    await this.git(
+      ['ls-remote', this.withToken(url, token)],
+      this.dir,
+      token,
+      proxy,
+      15_000,
+    );
+    return true;
   }
 
   private async pullUnlocked(pathname: string) {
@@ -235,6 +283,7 @@ export class GitSource extends NoriFile {
         ],
         this.dir,
         source.token ?? undefined,
+        source.proxy,
       );
       await this.git(['remote', 'set-url', 'origin', source.url], temporary);
       await this.sync(source, temporary);
@@ -269,9 +318,14 @@ export class GitSource extends NoriFile {
   private async sync(source: TGitSource, repositoryPath: string) {
     const token = source.token ?? undefined;
     const authenticatedUrl = this.withToken(source.url, token);
-    const branches = await this.listRemoteBranches(source.url, token);
+    const branches = await this.listRemoteBranches(
+      source.url,
+      token,
+      source.proxy,
+    );
     const branch =
-      source.branch ?? (await this.defaultBranch(source.url, token));
+      source.branch ??
+      (await this.defaultBranch(source.url, token, source.proxy));
 
     if (!branches.includes(branch)) {
       throw new Error(`远端分支不存在: ${branch}`);
@@ -288,6 +342,7 @@ export class GitSource extends NoriFile {
       ],
       repositoryPath,
       token,
+      source.proxy,
     );
 
     const gitignorePath = join(repositoryPath, '.gitignore');
@@ -317,11 +372,16 @@ export class GitSource extends NoriFile {
    * @param url Git 仓库地址
    * @param token Personal Access Token
    * */
-  private async defaultBranch(url: string, token?: string) {
+  private async defaultBranch(
+    url: string,
+    token?: string,
+    proxy?: string | null,
+  ) {
     const output = await this.git(
       ['ls-remote', '--symref', this.withToken(url, token), 'HEAD'],
       this.dir,
       token,
+      proxy,
     );
     const branch = output.match(/^ref: refs\/heads\/(.+)\tHEAD$/m)?.[1];
     if (!branch) throw new Error('无法获取远端默认分支');
@@ -338,8 +398,9 @@ export class GitSource extends NoriFile {
     url: string,
     token: string | undefined,
     branch: string,
+    proxy?: string | null,
   ) {
-    if (!(await this.listRemoteBranches(url, token)).includes(branch)) {
+    if (!(await this.listRemoteBranches(url, token, proxy)).includes(branch)) {
       throw new Error(`远端分支不存在: ${branch}`);
     }
   }
@@ -400,6 +461,49 @@ export class GitSource extends NoriFile {
   }
 
   /**
+   * 规范化并校验 Git HTTP 代理地址
+   * @param value HTTP 代理地址
+   * */
+  private normalizeProxy(value?: string | null) {
+    const normalized = value?.trim();
+    if (!normalized) return null;
+
+    let proxy: URL;
+    try {
+      proxy = new URL(normalized);
+    } catch {
+      throw new Error('Git 代理地址不合法');
+    }
+
+    if (
+      ![
+        'http:',
+        'https:',
+        'socks4:',
+        'socks4a:',
+        'socks5:',
+        'socks5h:',
+      ].includes(proxy.protocol)
+    ) {
+      throw new Error(`不支持的 Git 代理协议: ${proxy.protocol}`);
+    }
+
+    return proxy.href;
+  }
+
+  /**
+   * 检查代理是否适用于当前 Git 仓库协议
+   * @param proxy HTTP 代理地址
+   * @param url Git 仓库地址
+   * */
+  private assertProxy(proxy: string | null, url: string) {
+    if (!proxy) return;
+    if (!['http:', 'https:'].includes(new URL(url).protocol)) {
+      throw new Error('代理仅支持 HTTP/HTTPS Git 仓库地址');
+    }
+  }
+
+  /**
    * 检查脚本路径是否合法
    * @param pathname 脚本路径
    * */
@@ -419,18 +523,37 @@ export class GitSource extends NoriFile {
    * @param cwd 当前工作目录
    * @param token Personal Access Token
    * */
-  private async git(args: string[], cwd: string, token?: string) {
-    const process = Bun.spawn(['git', ...args], {
+  private async git(
+    args: string[],
+    cwd: string,
+    token?: string,
+    proxy?: string | null,
+    timeoutMs?: number,
+  ) {
+    const config = proxy ? ['-c', `http.proxy=${proxy}`] : [];
+    const process = Bun.spawn(['git', ...config, ...args], {
       cwd,
       env: { ...globalThis.process.env, GIT_TERMINAL_PROMPT: '0' },
       stdout: 'pipe',
       stderr: 'pipe',
     });
+    let timedOut = false;
+    const timeout = timeoutMs
+      ? setTimeout(() => {
+          timedOut = true;
+          process.kill();
+        }, timeoutMs)
+      : undefined;
     const [exitCode, stdout, stderr] = await Promise.all([
       process.exited,
       new Response(process.stdout).text(),
       new Response(process.stderr).text(),
     ]);
+    if (timeout) clearTimeout(timeout);
+
+    if (timedOut) {
+      throw new Error(`Git 代理连接测试超时 (${timeoutMs! / 1000} 秒)`);
+    }
 
     if (exitCode !== 0) {
       const message = this.redact(stderr.trim() || stdout.trim(), token);

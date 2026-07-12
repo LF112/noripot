@@ -1,13 +1,17 @@
 import {
+  AlertTriangle,
+  CheckCircle2,
   Clock3,
   GitBranch,
   GitCommitHorizontal,
   GitPullRequest,
+  Network,
   Pencil,
   Plus,
   Trash2,
 } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useRef, useState } from 'react';
+import { api } from '../api';
 import {
   Button,
   EmptyState,
@@ -93,6 +97,12 @@ export function Repositories({
                     ? `更新于 ${formatRepositoryTime(repo.updatedAt)}`
                     : '等待首次同步'}
                 </span>
+                {repo.proxy ? (
+                  <span title={repo.proxy}>
+                    <Network size={12} />
+                    使用代理
+                  </span>
+                ) : null}
               </div>
               <div className="row-actions">
                 <IconButton
@@ -171,11 +181,42 @@ function RepositoryForm({
   runAction: ActionRunner;
 }) {
   const record = repository && repository !== 'new' ? repository : null;
+  const formRef = useRef<HTMLFormElement>(null);
+  const [testingProxy, setTestingProxy] = useState(false);
+  const [proxyTest, setProxyTest] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
+  async function testProxy() {
+    if (!formRef.current) return;
+    const form = new FormData(formRef.current);
+    const token = String(form.get('token') ?? '');
+    setTestingProxy(true);
+    setProxyTest(null);
+    try {
+      await api.post('/api/git/proxy/test', {
+        ...(record ? { pathname: record.pathname } : {}),
+        url: form.get('url'),
+        proxy: form.get('proxy'),
+        ...(token ? { token } : {}),
+      });
+      setProxyTest({ type: 'success', message: '代理连接正常' });
+    } catch (cause) {
+      setProxyTest({
+        type: 'error',
+        message: cause instanceof Error ? cause.message : '代理连接失败',
+      });
+    } finally {
+      setTestingProxy(false);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const token = String(form.get('token') ?? '');
+    const proxy = String(form.get('proxy') ?? '').trim();
     const ok = await runAction(
       `git:save:${record?.pathname ?? 'new'}`,
       '/api/git/upsert',
@@ -183,6 +224,7 @@ function RepositoryForm({
         pathname: form.get('pathname'),
         url: form.get('url'),
         branch: String(form.get('branch') || '') || null,
+        proxy: proxy || null,
         ...(token ? { token } : {}),
       },
       record ? '仓库配置已更新' : '仓库已添加',
@@ -203,6 +245,7 @@ function RepositoryForm({
         <form
           className="modal-form"
           key={record?.pathname ?? 'new'}
+          ref={formRef}
           onSubmit={submit}
         >
           <Field label="脚本路径">
@@ -244,6 +287,37 @@ function RepositoryForm({
               />
             </Field>
           </div>
+          <Field label="代理地址" hint="可选，仅用于此仓库的 HTTP/HTTPS 拉取">
+            <div className="proxy-input-row">
+              <Input
+                defaultValue={record?.proxy ?? ''}
+                name="proxy"
+                placeholder="http://localhost:7890"
+                type="url"
+              />
+              <Button
+                loading={testingProxy}
+                onClick={() => void testProxy()}
+                type="button"
+              >
+                <Network size={15} />
+                测试连接
+              </Button>
+            </div>
+            {proxyTest ? (
+              <div
+                className={`proxy-test-result proxy-test-${proxyTest.type}`}
+                role={proxyTest.type === 'error' ? 'alert' : 'status'}
+              >
+                {proxyTest.type === 'success' ? (
+                  <CheckCircle2 size={14} />
+                ) : (
+                  <AlertTriangle size={14} />
+                )}
+                <span>{proxyTest.message}</span>
+              </div>
+            ) : null}
+          </Field>
           <div className="modal-actions">
             <Button onClick={onClose} type="button">
               取消

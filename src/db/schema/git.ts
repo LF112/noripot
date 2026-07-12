@@ -11,6 +11,7 @@ export const gitSources = snakeCase.table(
     url: t.text().notNull(),
     branch: t.text(),
     token: t.text(),
+    proxy: t.text(),
     commitHash: t.text(),
     commitMessage: t.text(),
     updatedAt: t.integer({ mode: 'timestamp_ms' }),

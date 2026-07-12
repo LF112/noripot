@@ -8,7 +8,11 @@ import {
 import { NoriGateway } from './src/gateway';
 import { logger } from './src/logger';
 import { NoriScript, type ScriptUpdateOptions } from './src/script';
-import { GitSource, type GitSourceOptions } from './src/script/source/git.ts';
+import {
+  type GitProxyTestOptions,
+  GitSource,
+  type GitSourceOptions,
+} from './src/script/source/git.ts';
 import dashboard from './src-ui/index.html';
 
 class NoriPot {
@@ -413,6 +417,20 @@ class NoriPot {
             }
           },
         },
+        // 测试代理能否访问指定 Git 仓库
+        '/api/git/proxy/test': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as GitProxyTestOptions;
+              return Response.json({ data: await noripot.git.testProxy(data) });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
         // 获取已配置仓库的远端分支列表
         '/api/git/branch/list': {
           POST: async (req) => {
@@ -436,11 +454,13 @@ class NoriPot {
               const data = (await req.json()) as {
                 url: string;
                 token?: string;
+                proxy?: string | null;
               };
               return Response.json({
                 data: await noripot.git.listRemoteBranches(
                   data.url,
                   data.token,
+                  data.proxy,
                 ),
               });
             } catch (error) {
