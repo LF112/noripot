@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import type { ReactNode } from 'react';
+import { cn } from '../../lib/utils';
 import { Button } from './button';
 
 interface DialogProps {
@@ -9,6 +10,7 @@ interface DialogProps {
   description?: string;
   children: ReactNode;
   onClose: () => void;
+  className?: string;
 }
 
 export function Dialog({
@@ -17,6 +19,7 @@ export function Dialog({
   description,
   children,
   onClose,
+  className,
 }: DialogProps) {
   return (
     <DialogPrimitive.Root
@@ -31,7 +34,7 @@ export function Dialog({
           data-slot="dialog-overlay"
         />
         <DialogPrimitive.Content
-          className="dialog-content"
+          className={cn('dialog-content', className)}
           data-slot="dialog-content"
         >
           <header className="dialog-header">
@@ -62,6 +65,7 @@ export function Sheet({
   description,
   children,
   onClose,
+  className,
 }: DialogProps) {
   return (
     <DialogPrimitive.Root
@@ -76,7 +80,7 @@ export function Sheet({
           data-slot="sheet-overlay"
         />
         <DialogPrimitive.Content
-          className="sheet-content"
+          className={cn('sheet-content', className)}
           data-slot="sheet-content"
         >
           <header className="sheet-header">

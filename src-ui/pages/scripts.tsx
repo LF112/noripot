@@ -1,5 +1,6 @@
 import {
   Boxes,
+  Braces,
   CircleDot,
   ListPlus,
   LoaderCircle,
@@ -27,6 +28,12 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { formatLogTime, VirtualLogList } from '../components/virtual-log-list';
+import {
+  type EnvironmentSourceFormat,
+  parseEnvironmentSource,
+  serializeEnvironmentSource,
+  validateEnvironmentEntries,
+} from '../lib/environment-formats';
 import { usePollCountdown } from '../lib/use-poll-countdown';
 import type {
   ActionRunner,
@@ -286,6 +293,16 @@ interface EnvironmentRow {
   value: string;
 }
 
+type EnvironmentEditorMode = 'table' | EnvironmentSourceFormat;
+
+const environmentModes: { value: EnvironmentEditorMode; label: string }[] = [
+  { value: 'table', label: '表格' },
+  { value: 'env', label: '.env' },
+  { value: 'linux', label: 'Linux' },
+  { value: 'windows', label: 'Windows' },
+  { value: 'yaml', label: 'YAML' },
+];
+
 let environmentRowId = 0;
 
 function createEnvironmentRow(key = '', value = ''): EnvironmentRow {
@@ -306,9 +323,14 @@ function ScriptSettings({
 }) {
   const [error, setError] = useState('');
   const [environment, setEnvironment] = useState<EnvironmentRow[]>([]);
+  const [environmentMode, setEnvironmentMode] =
+    useState<EnvironmentEditorMode>('table');
+  const [environmentSource, setEnvironmentSource] = useState('');
 
   useEffect(() => {
     setError('');
+    setEnvironmentMode('table');
+    setEnvironmentSource('');
     const rows = Object.entries(script?.env ?? {}).map(([key, value]) =>
       createEnvironmentRow(key, value),
     );
@@ -325,6 +347,40 @@ function ScriptSettings({
     );
   }
 
+  function environmentEntries() {
+    const entries = environment
+      .map((row) => ({ key: row.key.trim(), value: row.value }))
+      .filter((row) => row.key || row.value);
+    if (entries.some((row) => !row.key)) {
+      throw new Error('环境变量键名不能为空');
+    }
+    return validateEnvironmentEntries(entries);
+  }
+
+  function changeEnvironmentMode(nextMode: EnvironmentEditorMode) {
+    if (nextMode === environmentMode) return;
+    try {
+      const entries =
+        environmentMode === 'table'
+          ? environmentEntries()
+          : parseEnvironmentSource(environmentSource, environmentMode);
+      if (nextMode === 'table') {
+        setEnvironment(
+          entries.length
+            ? entries.map(({ key, value }) => createEnvironmentRow(key, value))
+            : [createEnvironmentRow()],
+        );
+        setEnvironmentSource('');
+      } else {
+        setEnvironmentSource(serializeEnvironmentSource(entries, nextMode));
+      }
+      setEnvironmentMode(nextMode);
+      setError('');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '环境变量格式不正确');
+    }
+  }
+
   function removeEnvironment(id: number) {
     setEnvironment((rows) => {
       const next = rows.filter((row) => row.id !== id);
@@ -337,12 +393,10 @@ function ScriptSettings({
     if (!script) return;
     const form = new FormData(event.currentTarget);
     try {
-      const entries = environment
-        .map((row) => ({ key: row.key.trim(), value: row.value }))
-        .filter((row) => row.key || row.value);
-      if (entries.some((row) => !row.key)) {
-        throw new Error('环境变量键名不能为空');
-      }
+      const entries =
+        environmentMode === 'table'
+          ? environmentEntries()
+          : parseEnvironmentSource(environmentSource, environmentMode);
       if (new Set(entries.map((row) => row.key)).size !== entries.length) {
         throw new Error('环境变量键名不能重复');
       }
@@ -368,6 +422,7 @@ function ScriptSettings({
   return (
     <Modal
       description={script?.pathname}
+      className="script-settings-dialog"
       open={Boolean(script)}
       title="编辑脚本配置"
       onClose={onClose}
@@ -388,49 +443,100 @@ function ScriptSettings({
           </Field>
           <fieldset className="environment-fieldset">
             <div className="environment-header">
-              <legend>环境变量</legend>
-              <Button
-                onClick={() =>
-                  setEnvironment((rows) => [...rows, createEnvironmentRow()])
-                }
-                type="button"
-                variant="ghost"
-              >
-                <ListPlus size={15} />
-                添加变量
-              </Button>
+              <div>
+                <legend>环境变量</legend>
+              </div>
+              {environmentMode === 'table' ? (
+                <Button
+                  onClick={() =>
+                    setEnvironment((rows) => [...rows, createEnvironmentRow()])
+                  }
+                  type="button"
+                  variant="ghost"
+                >
+                  <ListPlus size={15} />
+                  添加变量
+                </Button>
+              ) : null}
             </div>
-            <div className="environment-list">
-              {environment.map((row) => (
-                <div className="environment-row" key={row.id}>
-                  <Input
-                    aria-label="环境变量键名"
-                    autoComplete="off"
-                    onChange={(event) =>
-                      updateEnvironment(row.id, 'key', event.target.value)
-                    }
-                    placeholder="KEY"
-                    value={row.key}
-                  />
-                  <Input
-                    aria-label="环境变量值"
-                    autoComplete="off"
-                    onChange={(event) =>
-                      updateEnvironment(row.id, 'value', event.target.value)
-                    }
-                    placeholder="value"
-                    value={row.value}
-                  />
-                  <IconButton
-                    label="删除环境变量"
-                    onClick={() => removeEnvironment(row.id)}
+            <div className="environment-editor">
+              <div
+                aria-label="环境变量格式"
+                className="environment-mode-tabs"
+                role="tablist"
+              >
+                {environmentModes.map((mode) => (
+                  <button
+                    aria-selected={environmentMode === mode.value}
+                    className={environmentMode === mode.value ? 'active' : ''}
+                    key={mode.value}
+                    onClick={() => changeEnvironmentMode(mode.value)}
+                    role="tab"
                     type="button"
-                    variant="danger"
                   >
-                    <Trash2 size={15} />
-                  </IconButton>
+                    {mode.value === 'table' ? (
+                      <ListPlus size={13} />
+                    ) : (
+                      <Braces size={13} />
+                    )}
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+              {environmentMode === 'table' ? (
+                <div className="environment-list">
+                  {environment.map((row) => (
+                    <div className="environment-row" key={row.id}>
+                      <Input
+                        aria-label="环境变量键名"
+                        autoComplete="off"
+                        onChange={(event) =>
+                          updateEnvironment(row.id, 'key', event.target.value)
+                        }
+                        placeholder="KEY"
+                        value={row.key}
+                      />
+                      <Input
+                        aria-label="环境变量值"
+                        autoComplete="off"
+                        onChange={(event) =>
+                          updateEnvironment(row.id, 'value', event.target.value)
+                        }
+                        placeholder="value"
+                        value={row.value}
+                      />
+                      <IconButton
+                        label="删除环境变量"
+                        onClick={() => removeEnvironment(row.id)}
+                        type="button"
+                        variant="danger"
+                      >
+                        <Trash2 size={15} />
+                      </IconButton>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <textarea
+                  aria-label={`${environmentMode} 环境变量`}
+                  className="environment-source"
+                  onChange={(event) => {
+                    setEnvironmentSource(event.target.value);
+                    setError('');
+                  }}
+                  placeholder={
+                    environmentMode === 'linux'
+                      ? 'export API_URL="https://example.com"'
+                      : environmentMode === 'windows'
+                        ? 'set "API_URL=https://example.com"'
+                        : environmentMode === 'yaml'
+                          ? 'API_URL: "https://example.com"'
+                          : 'API_URL="https://example.com"'
+                  }
+                  spellCheck={false}
+                  value={environmentSource}
+                />
+              )}
             </div>
           </fieldset>
           {error ? <p className="form-error">{error}</p> : null}
