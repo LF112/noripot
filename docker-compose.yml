@@ -9,7 +9,7 @@ services:
 
     ports:
       - "4096:4096"
-      - "3001:3001"
+      - "2048:2048"
 
     volumes:
       - ./noripot/runtime:/noripot/runtime

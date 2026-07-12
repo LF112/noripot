@@ -83,7 +83,6 @@ export function AppLayout({
             <span className="pulse-dot" />
             <div>
               <strong>服务已连接</strong>
-              <small>localhost:3001</small>
             </div>
           </div>
           <IconButton

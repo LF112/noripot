@@ -59,7 +59,7 @@ class NoriPot {
 
     // HTTP SERVER
     this.server = Bun.serve({
-      port: 3001,
+      port: 2048,
       development: process.env.NODE_ENV !== 'production',
       routes: {
         '/': dashboard,

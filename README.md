@@ -12,6 +12,6 @@ To run:
 bun run index.ts
 ```
 
-The control panel is available at [http://localhost:3001](http://localhost:3001).
+The control panel is available at [http://localhost:2048](http://localhost:2048).
 
 This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

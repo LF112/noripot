@@ -65,7 +65,7 @@ COPY Caddyfile /etc/caddy/Caddyfile
 
 RUN mkdir -p /run/caddy && chown -R bun:bun /run/caddy
 
-EXPOSE 4096 3001
+EXPOSE 4096 2048
 
 USER bun
 
