@@ -1,11 +1,15 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "9e45718c-d311-4528-bac6-a9d2e9a1e7d4",
+  "id": "ed07b818-bcf5-415a-bf8a-1facc5cb0498",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
+    {
+      "name": "cron",
+      "entityType": "tables"
+    },
     {
       "name": "gateway",
       "entityType": "tables"
@@ -21,6 +25,46 @@
     {
       "name": "scripts",
       "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "cron",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "type",
+      "entityType": "columns",
+      "table": "cron"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "config",
+      "entityType": "columns",
+      "table": "cron"
     },
     {
       "type": "integer",
@@ -221,6 +265,15 @@
       "name": "fk_git_sources_pathname_scripts_pathname_fk",
       "entityType": "fks",
       "table": "git_sources"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "cron_pk",
+      "table": "cron",
+      "entityType": "pks"
     },
     {
       "columns": [

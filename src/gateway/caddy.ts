@@ -149,7 +149,7 @@ export class GatewayCaddy {
           return;
         }
       } catch {
-        // Socket 尚未创建，继续等待 Caddy 初始化。
+        // Socket 尚未创建，继续等待 Caddy 初始化
       }
 
       await Bun.sleep(100);

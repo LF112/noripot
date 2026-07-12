@@ -139,8 +139,10 @@ export class NoriRuntime {
     }
 
     if (info.process) {
-      info.process.kill();
+      const process = info.process;
       info.process = null;
+      process.kill();
+      await process.exited;
     }
 
     this.l.log(`🛑 实例 [${pathname}] 已手动停止`);

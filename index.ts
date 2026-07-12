@@ -1,3 +1,4 @@
+import { type CronUpsertOptions, NoriCronJob } from './src/cron';
 import { NoriGateway } from './src/gateway';
 import { logger } from './src/logger';
 import { NoriScript } from './src/script';
@@ -9,6 +10,7 @@ class NoriPot {
   public script = new NoriScript();
   public gateway = new NoriGateway();
   public git = new GitSource();
+  public cron = new NoriCronJob(this.script, this.git);
 
   constructor() {
     process.once('SIGINT', () => void this.shutdown('SIGINT'));
@@ -23,6 +25,10 @@ class NoriPot {
     } catch {
       logger.log('网关启动失败 ❌');
     }
+
+    logger.log('正在注册计划任务...');
+    this.cron.start();
+    logger.log('计划任务注册完成 ✅');
 
     // HTTP SERVER
     this.server = Bun.serve({
@@ -87,6 +93,51 @@ class NoriPot {
             return Response.json({
               data: await noripot.script.listScripts(),
             });
+          },
+        },
+        '/api/cron/upsert': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as CronUpsertOptions;
+              const task = noripot.cron.upsert(data);
+              return Response.json(
+                { data: task },
+                { status: data.id === undefined ? 201 : 200 },
+              );
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/cron/execute': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { id: number };
+              await noripot.cron.execute(data.id);
+              return Response.json({ data: true });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/cron/remove': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { id: number };
+              const task = noripot.cron.remove(data.id);
+              return Response.json({ data: task });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
           },
         },
         '/api/gateway/list': {
@@ -276,6 +327,8 @@ class NoriPot {
       logger.log('正在关闭 HTTP 服务...');
       await this.server.stop(true);
     }
+
+    this.cron.stop();
 
     logger.log('正在关闭网关...');
     await noripot.gateway.stop();

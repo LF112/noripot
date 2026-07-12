@@ -1,3 +1,10 @@
+CREATE TABLE `cron` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`cron` text NOT NULL,
+	`type` text NOT NULL,
+	`config` text DEFAULT '{}' NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `gateway` (
 	`id` integer PRIMARY KEY AUTOINCREMENT,
 	`pathname` text NOT NULL,
