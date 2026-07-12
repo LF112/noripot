@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 import { db } from '../db';
 import { scripts } from '../db/schema';
 import { NoriRuntime, type ProcessOptions } from './runtime.ts';
@@ -16,6 +16,20 @@ export class NoriScript extends ScriptFile {
   public package = new ScriptPackage();
   private runtime = new NoriRuntime(this);
   private syncing: Promise<ScriptSyncResult> | null = null;
+
+  /**
+   * 获取脚本配置及当前运行状态
+   */
+  async list() {
+    const records = await db
+      .select()
+      .from(scripts)
+      .orderBy(asc(scripts.pathname));
+    return records.map((record) => ({
+      ...record,
+      ...this.runtime.getStatus(record.pathname),
+    }));
+  }
 
   /**
    * 根据脚本目录同步数据库记录

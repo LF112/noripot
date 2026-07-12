@@ -53,6 +53,7 @@ COPY --from=db-generate /temp/drizzle /noripot/_/drizzle
 # app source
 COPY index.ts /noripot/_
 COPY ./src/ /noripot/_/src
+COPY ./src-ui/ /noripot/_/src-ui
 
 # projects workspace
 COPY --from=base /noripot/projects /noripot/projects

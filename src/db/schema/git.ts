@@ -11,6 +11,9 @@ export const gitSources = snakeCase.table(
     url: t.text().notNull(),
     branch: t.text(),
     token: t.text(),
+    commitHash: t.text(),
+    commitMessage: t.text(),
+    updatedAt: t.integer({ mode: 'timestamp_ms' }),
   }),
   (table) => [uniqueIndex('git_sources_url_unique').on(table.url)],
 );

@@ -18,6 +18,9 @@ CREATE TABLE `git_sources` (
 	`url` text NOT NULL,
 	`branch` text,
 	`token` text,
+	`commit_hash` text,
+	`commit_message` text,
+	`updated_at` integer,
 	CONSTRAINT `fk_git_sources_pathname_scripts_pathname_fk` FOREIGN KEY (`pathname`) REFERENCES `scripts`(`pathname`) ON DELETE CASCADE
 );
 --> statement-breakpoint

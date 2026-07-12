@@ -18,7 +18,7 @@ const initDB = async () => {
   db = drizzle({ client: sqlite, relations });
 
   // 执行迁移 / 初始化
-  migrate(db, { migrationsFolder: join(appDir, '_/drizzle') });
+  migrate(db, { migrationsFolder: join(import.meta.dir, '../../drizzle') });
 
   return db;
 };

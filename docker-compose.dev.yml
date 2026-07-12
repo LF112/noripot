@@ -7,7 +7,7 @@ services:
       - /noripot/_/dev/index.ts
 
     volumes:
-      - .:/noripot/_/dev:ro
+      - .:/noripot/_/dev
       - /noripot/_/dev/node_modules
 
     environment:

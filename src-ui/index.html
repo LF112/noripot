@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171717" />
+    <meta name="color-scheme" content="dark" />
+    <script>
+      // Virtua's dynamic measurement can emit these benign notifications.
+      const ignoredResizeObserverErrors = new Set([
+        'ResizeObserver loop completed with undelivered notifications.',
+        'ResizeObserver loop limit exceeded',
+      ]);
+      window.addEventListener(
+        'error',
+        (event) => {
+          if (ignoredResizeObserverErrors.has(event.message)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        },
+        true,
+      );
+    </script>
+    <title>NoriPot 控制台</title>
+    <link rel="stylesheet" href="./styles.generated.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

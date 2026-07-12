@@ -76,15 +76,19 @@ export class GitSource extends NoriFile {
       url,
       branch,
       token,
+      commitHash: current?.commitHash ?? null,
+      commitMessage: current?.commitMessage ?? null,
+      updatedAt: current?.updatedAt ?? null,
     };
 
     // 如果 GIT 配置已存在那就更新
     if (current) {
-      await db
+      return db
         .update(gitSources)
         .set({ url, branch, token })
-        .where(eq(gitSources.pathname, pathname));
-      return source;
+        .where(eq(gitSources.pathname, pathname))
+        .returning()
+        .get();
     }
 
     // 新建配置
@@ -110,7 +114,7 @@ export class GitSource extends NoriFile {
       throw error;
     }
 
-    return source;
+    return this.updateCommitMetadata(pathname, this.realpath(pathname));
   }
 
   /**
@@ -180,7 +184,25 @@ export class GitSource extends NoriFile {
     }
 
     await this.sync(source, repositoryPath);
-    return source;
+    return this.updateCommitMetadata(pathname, repositoryPath);
+  }
+
+  private async updateCommitMetadata(pathname: string, repositoryPath: string) {
+    const [commitHash, commitMessage] = await Promise.all([
+      this.git(['rev-parse', 'HEAD'], repositoryPath),
+      this.git(['log', '-1', '--pretty=%s'], repositoryPath),
+    ]);
+
+    return db
+      .update(gitSources)
+      .set({
+        commitHash: commitHash.trim(),
+        commitMessage: commitMessage.trim(),
+        updatedAt: new Date(),
+      })
+      .where(eq(gitSources.pathname, pathname))
+      .returning()
+      .get();
   }
 
   /**

@@ -1,16 +1,30 @@
+import type { FSWatcher } from 'node:fs';
 import { type CronUpsertOptions, NoriCronJob } from './src/cron';
+import { NoriDashboard } from './src/dashboard';
+import {
+  buildDashboardStyles,
+  watchDashboardStyles,
+} from './src/dashboard/styles.ts';
 import { NoriGateway } from './src/gateway';
 import { logger } from './src/logger';
 import { NoriScript, type ScriptUpdateOptions } from './src/script';
 import { GitSource, type GitSourceOptions } from './src/script/source/git.ts';
+import dashboard from './src-ui/index.html';
 
 class NoriPot {
   private server: ReturnType<typeof Bun.serve> | null = null;
+  private uiWatcher: FSWatcher | null = null;
 
   public script = new NoriScript();
   public gateway = new NoriGateway();
   public git = new GitSource();
   public cron = new NoriCronJob(this.script, this.git);
+  public dashboard = new NoriDashboard(
+    this.script,
+    this.gateway,
+    this.cron,
+    this.git,
+  );
 
   constructor() {
     process.once('SIGINT', () => void this.shutdown('SIGINT'));
@@ -18,6 +32,13 @@ class NoriPot {
   }
 
   public async bootstrap() {
+    await buildDashboardStyles();
+    if (process.env.NODE_ENV !== 'production') {
+      this.uiWatcher = watchDashboardStyles((error) => {
+        logger.log('控制面板样式重建失败:', error);
+      });
+    }
+
     logger.log('正在扫描脚本...');
     const { created, deleted } = await this.script.sync();
     logger.log(
@@ -39,7 +60,93 @@ class NoriPot {
     // HTTP SERVER
     this.server = Bun.serve({
       port: 3001,
+      development: process.env.NODE_ENV !== 'production',
       routes: {
+        '/': dashboard,
+        '/api/dashboard': {
+          GET: async () => {
+            return Response.json({ data: await noripot.dashboard.snapshot() });
+          },
+        },
+        '/api/scripts/status': {
+          GET: async () => {
+            return Response.json({ data: await noripot.script.list() });
+          },
+        },
+        '/api/scripts/latest-logs': {
+          GET: () => {
+            return Response.json({
+              data: noripot.dashboard.latestScriptLogs(),
+            });
+          },
+        },
+        '/api/script/logs': {
+          GET: (req) => {
+            try {
+              const url = new URL(req.url);
+              const pathname = url.searchParams.get('pathname') ?? '';
+              const limit = Number(url.searchParams.get('limit') ?? 200);
+              return Response.json({
+                data: noripot.dashboard.scriptLogs(pathname, limit),
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/script/logs/clear': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { pathname: string };
+              noripot.dashboard.clearScriptLogs(data.pathname);
+              return Response.json({ data: true });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/cron/logs': {
+          GET: (req) => {
+            try {
+              const url = new URL(req.url);
+              const id = Number(url.searchParams.get('id'));
+              const limit = Number(url.searchParams.get('limit') ?? 200);
+              return Response.json({
+                data: noripot.dashboard.cronLogs(id, limit),
+              });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/cron/logs/clear': {
+          POST: async (req) => {
+            try {
+              const data = (await req.json()) as { id: number };
+              noripot.dashboard.clearCronLogs(data.id);
+              return Response.json({ data: true });
+            } catch (error) {
+              return Response.json(
+                { error: (error as Error).message },
+                { status: 400 },
+              );
+            }
+          },
+        },
+        '/api/cron/schedule': {
+          GET: () => {
+            return Response.json({ data: noripot.cron.schedule() });
+          },
+        },
         '/api/list': {
           GET: async () => {
             return Response.json({
@@ -174,6 +281,7 @@ class NoriPot {
           POST: async (req) => {
             try {
               const data = (await req.json()) as {
+                id?: number;
                 pathname: string;
                 port: number;
                 path: string;
@@ -352,6 +460,8 @@ class NoriPot {
     }
 
     this.cron.stop();
+    this.uiWatcher?.close();
+    this.uiWatcher = null;
 
     logger.log('正在关闭网关...');
     await noripot.gateway.stop();

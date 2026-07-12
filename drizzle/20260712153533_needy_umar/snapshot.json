@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "ed07b818-bcf5-415a-bf8a-1facc5cb0498",
+  "id": "77f7175e-b84b-4b54-a669-bbd5f4ba4141",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -143,6 +143,36 @@
       "default": null,
       "generated": null,
       "name": "token",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "commit_hash",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "commit_message",
+      "entityType": "columns",
+      "table": "git_sources"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
       "entityType": "columns",
       "table": "git_sources"
     },

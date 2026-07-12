@@ -1,6 +1,6 @@
 import { asc, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { type ActionType, cron, type TCron } from '../db/schema';
+import { ActionType, cron, gitSources, type TCron } from '../db/schema';
 import { logger } from '../logger';
 import type { NoriScript } from '../script';
 import type { GitSource } from '../script/source/git.ts';
@@ -29,12 +29,26 @@ export class NoriCronJob {
   }
 
   /**
+   * 获取全部计划任务
+   */
+  list() {
+    return db.select().from(cron).orderBy(asc(cron.id)).all();
+  }
+
+  schedule() {
+    return this.list().map((task) => ({
+      id: task.id,
+      nextRunAt: Bun.cron.parse(task.cron),
+    }));
+  }
+
+  /**
    * 从数据库注册并启用全部计划任务
    */
   start() {
     this.stop();
 
-    const tasks = db.select().from(cron).orderBy(asc(cron.id)).all();
+    const tasks = this.list();
     for (const task of tasks) {
       try {
         this.register(task);
@@ -82,6 +96,17 @@ export class NoriCronJob {
     }
 
     ActionBase.validate(options.type, options.config, this.context);
+    if (options.type === ActionType.GIT_PULL) {
+      const pathname = Reflect.get(options.config, 'pathname');
+      const repository = db
+        .select({ pathname: gitSources.pathname })
+        .from(gitSources)
+        .where(eq(gitSources.pathname, String(pathname)))
+        .get();
+      if (!repository) {
+        throw new Error(`Git 仓库不存在: ${String(pathname)}`);
+      }
+    }
 
     const values = {
       cron: expression,
@@ -201,9 +226,16 @@ export class NoriCronJob {
   }
 
   private async executeAction(id: number) {
+    const taskLogger = this.l.tags(`cron:${id}`);
     const action = ActionBase.create(id, this.context);
-    await action.execute();
-    this.l.log(`计划任务 [${id}] 执行完成`);
+    taskLogger.info(`计划任务 [${id}] 开始执行`);
+    try {
+      await action.execute();
+      taskLogger.success(`计划任务 [${id}] 执行完成`);
+    } catch (error) {
+      taskLogger.error(`计划任务 [${id}] 执行失败:`, error);
+      throw error;
+    }
   }
 
   private assertId(id: number) {

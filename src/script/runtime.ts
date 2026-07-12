@@ -17,12 +17,30 @@ interface ProcessInfo {
   config: ProcessOptions; // 脚本配置
 }
 
+export interface ProcessStatus {
+  status: ProcessInfo['status'];
+  pid: number | null;
+  retryCount: number;
+}
+
 export class NoriRuntime {
   private l = logger.with('runtime');
 
   private processes = new Map<string, ProcessInfo>();
 
   constructor(private script: NoriScript) {}
+
+  /**
+   * 获取脚本当前运行状态
+   */
+  getStatus(pathname: string): ProcessStatus {
+    const info = this.processes.get(pathname);
+    return {
+      status: info?.status ?? 'stopped',
+      pid: info?.process?.pid ?? null,
+      retryCount: info?.retryCount ?? 0,
+    };
+  }
 
   /**
    * 启动脚本实例

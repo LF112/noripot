@@ -5,6 +5,7 @@ import { gateway } from '../db/schema';
 import { GatewayCaddy } from './caddy.ts';
 
 export type GatewayOptions = {
+  id?: number;
   pathname: string;
   port: number;
   path: string;
@@ -51,16 +52,35 @@ export class NoriGateway {
       throw new Error('脚本不存在');
     }
 
+    const current = options.id
+      ? await db.query.gateway.findFirst({ where: { id: options.id } })
+      : undefined;
+    if (options.id && !current) {
+      throw new Error('网关不存在');
+    }
+
     const conflicts = await db
       .select()
       .from(gateway)
       .where(
         or(eq(gateway.port, options.port), eq(gateway.path, options.path)),
       );
-    const samePort = conflicts.find((entry) => entry.port === options.port);
-    const samePath = conflicts.find((entry) => entry.path === options.path);
+    const otherConflicts = conflicts.filter((entry) => entry.id !== options.id);
+    const samePort = otherConflicts.find(
+      (entry) => entry.port === options.port,
+    );
+    const samePath = otherConflicts.find(
+      (entry) => entry.path === options.path,
+    );
 
-    if (conflicts.some((entry) => entry.pathname !== options.pathname)) {
+    if (options.id && otherConflicts.length > 0) {
+      if (samePort) {
+        throw new Error('端口已被其他网关配置使用');
+      }
+      throw new Error('网关路径已被其他网关配置使用');
+    }
+
+    if (otherConflicts.some((entry) => entry.pathname !== options.pathname)) {
       if (samePort?.pathname !== options.pathname) {
         throw new Error('端口已被其他网关配置使用');
       }
@@ -71,11 +91,15 @@ export class NoriGateway {
       throw new Error('端口和路径分别属于不同的网关配置，无法更新');
     }
 
-    const existing = samePort ?? samePath;
+    const existing = current ?? samePort ?? samePath;
     const created = existing
       ? db
           .update(gateway)
-          .set({ port: options.port, path: options.path })
+          .set({
+            pathname: options.pathname,
+            port: options.port,
+            path: options.path,
+          })
           .where(eq(gateway.id, existing.id))
           .returning()
           .get()
