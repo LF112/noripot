@@ -1,12 +1,13 @@
 import { type FSWatcher, watch } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import tailwind from 'bun-plugin-tailwind';
 
 const uiDirectory = join(import.meta.dir, '../../src-ui');
 const sourcePath = join(uiDirectory, 'styles.css');
 const outputPath = join(uiDirectory, 'styles.generated.css');
-const buildDirectory = join(process.cwd(), 'runtime/ui-build');
+const buildDirectory = join(tmpdir(), 'noripot-ui-build');
 
 export async function buildDashboardStyles() {
   await mkdir(buildDirectory, { recursive: true });

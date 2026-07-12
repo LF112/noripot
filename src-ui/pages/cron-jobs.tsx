@@ -29,6 +29,7 @@ import {
   Sheet,
 } from '../components/ui';
 import { formatLogTime, VirtualLogList } from '../components/virtual-log-list';
+import { usePollCountdown } from '../lib/use-poll-countdown';
 import type {
   ActionRunner,
   CronActionType,
@@ -82,7 +83,7 @@ export function CronJobs({
       <PageHeader
         eyebrow="AUTOMATION"
         title="计划任务"
-        description="按 Cron 表达式执行脚本或同步 Git 仓库。"
+        description="按 Cron 表达式执行脚本或同步 Git 仓库"
         actions={
           <Button onClick={() => setEditing('new')} variant="primary">
             <Plus size={15} />
@@ -202,7 +203,7 @@ export function CronJobs({
             }
             icon={<Timer size={22} />}
             title="暂无计划任务"
-            description="创建任务以自动运行脚本或拉取仓库。"
+            description="创建任务以自动运行脚本或拉取仓库"
           />
         )}
       </section>
@@ -283,7 +284,7 @@ function CronForm({
   return (
     <>
       <Modal
-        description="Cron 表达式由 Bun 调度器解析。"
+        description="Cron 表达式由 Bun 调度器解析"
         open={Boolean(job)}
         title={record ? `编辑任务 #${record.id}` : '新建计划任务'}
         onClose={onClose}
@@ -385,7 +386,7 @@ function CronForm({
       </Modal>
 
       <Modal
-        description="选择常用计划类型并生成 Bun 支持的五段式 Cron 表达式。"
+        description="选择常用计划类型并生成 Bun 支持的五段式 Cron 表达式"
         open={builderOpen && Boolean(job)}
         title="可视化计划配置"
         onClose={() => setBuilderOpen(false)}
@@ -428,6 +429,7 @@ function CronLogs({
     revalidateOnFocus: true,
     keepPreviousData: false,
   });
+  const pollCountdown = usePollCountdown(1000, isValidating);
   const orderedLogs = useMemo(() => logs?.toReversed() ?? [], [logs]);
 
   return (
@@ -446,7 +448,9 @@ function CronLogs({
           <div className="script-log-toolbar">
             <span className="polling-state">
               <CircleDot className={isValidating ? 'active' : ''} size={11} />
-              {isValidating ? '正在更新' : `${logs?.length ?? 0} 条日志 · 实时`}
+              {isValidating
+                ? '正在更新'
+                : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
             <div className="log-toolbar-actions">
               <IconButton
@@ -494,7 +498,7 @@ function CronLogs({
             <EmptyState
               icon={<ScrollText size={20} />}
               title="暂无执行日志"
-              description="任务执行后，开始、完成或失败状态会显示在这里。"
+              description="任务执行后，开始、完成或失败状态会显示在这里"
             />
           ) : null}
           {orderedLogs.length ? <VirtualLogList logs={orderedLogs} /> : null}

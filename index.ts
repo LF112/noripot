@@ -68,6 +68,15 @@ class NoriPot {
             return Response.json({ data: await noripot.dashboard.snapshot() });
           },
         },
+        '/api/runtime/logs': {
+          GET: (req) => {
+            const url = new URL(req.url);
+            const limit = Number(url.searchParams.get('limit') ?? 500);
+            return Response.json({
+              data: noripot.dashboard.runtimeLogs(limit),
+            });
+          },
+        },
         '/api/scripts/status': {
           GET: async () => {
             return Response.json({ data: await noripot.script.list() });

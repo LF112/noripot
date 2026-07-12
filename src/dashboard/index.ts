@@ -3,6 +3,7 @@ import type { NoriCronJob } from '../cron';
 import { db } from '../db';
 import { logs, scripts } from '../db/schema';
 import type { NoriGateway } from '../gateway';
+import { memoryTransport } from '../logger';
 import type { NoriScript } from '../script';
 import type { GitSource } from '../script/source/git.ts';
 
@@ -29,20 +30,18 @@ export class NoriDashboard {
       latestLog: this.cronLogs(job.id, 1)[0] ?? null,
     }));
 
-    const recentLogs = db
-      .select()
-      .from(logs)
-      .orderBy(desc(logs.createdAt))
-      .limit(80)
-      .all();
-
     return {
       scripts,
       gateways,
       cronJobs,
       repositories: repositories.map(({ token: _, ...source }) => source),
-      recentLogs,
+      recentLogs: memoryTransport.list(80),
     };
+  }
+
+  runtimeLogs(limit = 500) {
+    const safeLimit = Math.min(Math.max(Math.floor(limit), 1), 500);
+    return memoryTransport.list(safeLimit);
   }
 
   scriptLogs(pathname: string, limit = 200) {

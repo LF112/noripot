@@ -1,13 +1,28 @@
 import {
   Activity,
   Boxes,
+  CircleDot,
   Clock3,
   GitBranch,
+  LoaderCircle,
   Network,
+  RefreshCw,
+  ScrollText,
   TerminalSquare,
 } from 'lucide-react';
-import { EmptyState, PageHeader, StatusBadge } from '../components/ui';
-import type { DashboardSnapshot, ProcessState } from '../types';
+import { useMemo, useState } from 'react';
+import useSWR from 'swr';
+import { request } from '../api';
+import {
+  EmptyState,
+  IconButton,
+  PageHeader,
+  Sheet,
+  StatusBadge,
+} from '../components/ui';
+import { VirtualLogList } from '../components/virtual-log-list';
+import { usePollCountdown } from '../lib/use-poll-countdown';
+import type { DashboardSnapshot, LogRecord, ProcessState } from '../types';
 
 const processStates: Array<{
   status: ProcessState;
@@ -20,6 +35,7 @@ const processStates: Array<{
 ];
 
 export function Overview({ data }: { data: DashboardSnapshot }) {
+  const [activityOpen, setActivityOpen] = useState(false);
   const running = data.scripts.filter(
     (script) => script.status === 'running',
   ).length;
@@ -67,7 +83,7 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
       <PageHeader
         eyebrow="SYSTEM OVERVIEW"
         title="运行概览"
-        description="脚本、路由和自动化任务的实时状态。"
+        description="脚本、路由和自动化任务的实时状态"
       />
 
       <section className="stat-grid" aria-label="系统统计">
@@ -94,15 +110,17 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
               <h2>实例状态</h2>
             </div>
             <div className="instance-state-summary">
-              {processStates.map(({ status, label }) => (
-                <span
-                  className={`overview-state status-${status}`}
-                  key={status}
-                >
-                  <i aria-hidden="true" />
-                  {label} {stateCounts[status]}
-                </span>
-              ))}
+              {processStates
+                .filter(({ status }) => stateCounts[status] > 0)
+                .map(({ status, label }) => (
+                  <span
+                    className={`overview-state status-${status}`}
+                    key={status}
+                  >
+                    <i aria-hidden="true" />
+                    {label} {stateCounts[status]}
+                  </span>
+                ))}
             </div>
           </header>
           {data.scripts.length ? (
@@ -126,7 +144,7 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
             <EmptyState
               icon={<TerminalSquare size={20} />}
               title="暂无脚本"
-              description="同步脚本目录后，实例会显示在这里。"
+              description="同步脚本目录后，实例会显示在这里"
             />
           )}
         </section>
@@ -137,7 +155,12 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
               <span className="eyebrow">RECENT ACTIVITY</span>
               <h2>最近活动</h2>
             </div>
-            <Activity size={17} />
+            <IconButton
+              label="查看最近活动日志"
+              onClick={() => setActivityOpen(true)}
+            >
+              <ScrollText size={16} />
+            </IconButton>
           </header>
           {data.recentLogs.length ? (
             <div className="log-list">
@@ -158,12 +181,95 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
             <EmptyState
               icon={<Activity size={20} />}
               title="暂无活动"
-              description="服务日志会按时间显示在这里。"
+              description="当前运行时的服务日志会显示在这里"
             />
           )}
         </section>
       </div>
+
+      <RuntimeActivityLogs
+        open={activityOpen}
+        onClose={() => setActivityOpen(false)}
+      />
     </>
+  );
+}
+
+function RuntimeActivityLogs({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const {
+    data: logs,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+  } = useSWR<LogRecord[]>(
+    open ? '/api/runtime/logs?limit=500' : null,
+    request,
+    {
+      refreshInterval: 1000,
+      refreshWhenHidden: false,
+      revalidateOnFocus: true,
+      keepPreviousData: false,
+    },
+  );
+  const pollCountdown = usePollCountdown(1000, isValidating);
+  const orderedLogs = useMemo(() => logs?.toReversed() ?? [], [logs]);
+
+  return (
+    <Sheet
+      description="当前运行时 · 最多 500 条"
+      open={open}
+      title="最近活动日志"
+      onClose={onClose}
+    >
+      <div className="script-log-view">
+        <div className="script-log-toolbar">
+          <span className="polling-state">
+            <CircleDot className={isValidating ? 'active' : ''} size={11} />
+            {isValidating
+              ? '正在更新'
+              : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
+          </span>
+          <IconButton
+            label="刷新日志"
+            disabled={isValidating}
+            onClick={() => void mutate()}
+          >
+            <RefreshCw
+              className={isValidating ? 'animate-spin' : ''}
+              size={15}
+            />
+          </IconButton>
+        </div>
+        {isLoading ? (
+          <div className="log-loading">
+            <LoaderCircle className="animate-spin" size={20} />
+            <span>正在加载日志...</span>
+          </div>
+        ) : null}
+        {error ? (
+          <div className="log-loading error-state">
+            <span>
+              {error instanceof Error ? error.message : '日志加载失败'}
+            </span>
+          </div>
+        ) : null}
+        {!isLoading && !error && logs?.length === 0 ? (
+          <EmptyState
+            icon={<Activity size={20} />}
+            title="暂无运行时日志"
+            description="新输出会实时显示在这里"
+          />
+        ) : null}
+        {orderedLogs.length ? <VirtualLogList logs={orderedLogs} /> : null}
+      </div>
+    </Sheet>
   );
 }
 

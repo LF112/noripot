@@ -62,7 +62,7 @@ export function Gateways({
       <PageHeader
         eyebrow="REVERSE PROXY"
         title="网关路由"
-        description="将公开路径映射到脚本实例端口。"
+        description="将公开路径映射到脚本实例端口"
         actions={
           <>
             <Button
@@ -146,13 +146,13 @@ export function Gateways({
             }
             icon={<Network size={22} />}
             title="暂无网关路由"
-            description="创建一条路由以公开脚本服务。"
+            description="创建一条路由以公开脚本服务"
           />
         </section>
       )}
 
       <Modal
-        description="路径与端口在全部路由中必须唯一。"
+        description="路径与端口在全部路由中必须唯一"
         open={Boolean(editing)}
         title={record ? '编辑网关路由' : '新建网关路由'}
         onClose={() => setEditing(null)}

@@ -27,6 +27,7 @@ import {
   StatusBadge,
 } from '../components/ui';
 import { formatLogTime, VirtualLogList } from '../components/virtual-log-list';
+import { usePollCountdown } from '../lib/use-poll-countdown';
 import type {
   ActionRunner,
   LogRecord,
@@ -117,7 +118,7 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
       <PageHeader
         eyebrow="PROCESS MANAGER"
         title="脚本实例"
-        description="管理脚本运行状态、重试策略与环境变量。"
+        description="管理脚本运行状态、重试策略与环境变量"
         actions={
           <Button
             loading={busy === 'sync'}
@@ -257,7 +258,7 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
             icon={<Boxes size={22} />}
             title={query ? '未找到脚本' : '暂无脚本实例'}
             description={
-              query ? '尝试调整搜索关键词。' : '同步脚本目录以创建实例记录。'
+              query ? '尝试调整搜索关键词' : '同步脚本目录以创建实例记录'
             }
           />
         )}
@@ -375,7 +376,7 @@ function ScriptSettings({
         <form className="modal-form" key={script.pathname} onSubmit={submit}>
           <Field
             label="最大重试次数"
-            hint="-1 表示持续重试，0 表示禁用自动重试。"
+            hint="-1 表示持续重试，0 表示禁用自动重试"
           >
             <Input
               defaultValue={script.retry}
@@ -477,6 +478,7 @@ function ScriptLogs({
     revalidateOnFocus: true,
     keepPreviousData: false,
   });
+  const pollCountdown = usePollCountdown(1000, isValidating);
   const orderedLogs = useMemo(() => logs?.toReversed() ?? [], [logs]);
 
   return (
@@ -491,7 +493,9 @@ function ScriptLogs({
           <div className="script-log-toolbar">
             <span className="polling-state">
               <CircleDot className={isValidating ? 'active' : ''} size={11} />
-              {isValidating ? '正在更新' : `${logs?.length ?? 0} 条日志 · 实时`}
+              {isValidating
+                ? '正在更新'
+                : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
             <div className="log-toolbar-actions">
               <IconButton
@@ -543,7 +547,7 @@ function ScriptLogs({
             <EmptyState
               icon={<ScrollText size={20} />}
               title="暂无实例日志"
-              description="启动脚本后，标准输出和错误会显示在这里。"
+              description="启动脚本后，标准输出和错误会显示在这里"
             />
           ) : null}
           {orderedLogs.length ? (

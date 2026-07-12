@@ -39,7 +39,7 @@ export function Repositories({
       <PageHeader
         eyebrow="SOURCE CONTROL"
         title="Git 仓库"
-        description="管理脚本目录的远端来源与同步分支。"
+        description="管理脚本目录的远端来源与同步分支"
         actions={
           <Button onClick={() => setEditing('new')} variant="primary">
             <Plus size={15} />
@@ -141,7 +141,7 @@ export function Repositories({
             }
             icon={<GitBranch size={22} />}
             title="暂无 Git 仓库"
-            description="关联远端仓库以同步脚本源代码。"
+            description="关联远端仓库以同步脚本源代码"
           />
         </section>
       )}
@@ -193,7 +193,7 @@ function RepositoryForm({
   return (
     <Modal
       description={
-        record ? '留空访问令牌可保留原有配置。' : '新仓库会克隆到脚本工作区。'
+        record ? '留空访问令牌可保留原有配置' : '新仓库会克隆到脚本工作区'
       }
       open={Boolean(repository)}
       title={record ? '编辑仓库' : '添加 Git 仓库'}
