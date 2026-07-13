@@ -89,10 +89,10 @@ export function App() {
         <div
           aria-live="polite"
           className={cn(
-            'fixed right-[22px] bottom-[22px] z-80 grid min-h-[52px] w-[min(380px,calc(100vw-44px))] grid-cols-[18px_minmax(0,1fr)_28px] items-center gap-2.5 rounded-lg border border-[#393939] bg-[#1c1c1c]/96 py-2 pr-2 pl-3.5 text-xs text-[#b4b4b4] max-[520px]:right-3 max-[520px]:bottom-[78px] max-[520px]:w-[calc(100vw-24px)]',
+            'fixed right-[22px] bottom-[22px] z-80 grid min-h-[52px] w-[min(380px,calc(100vw-44px))] grid-cols-[18px_minmax(0,1fr)_28px] items-center gap-2.5 rounded-lg border border-control bg-surface-hover/96 py-2 pr-2 pl-3.5 text-xs text-foreground-secondary max-[520px]:right-3 max-[520px]:bottom-[78px] max-[520px]:w-[calc(100vw-24px)]',
             toast.type === 'success'
               ? '[&>svg]:text-primary'
-              : '[&>svg]:text-red-400',
+              : '[&>svg]:text-destructive',
           )}
           data-slot="toast"
           role={toast.type === 'error' ? 'alert' : 'status'}
@@ -158,7 +158,7 @@ function renderView(
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[calc(100vh-190px)] flex-col items-center justify-center text-center text-[#898989] [&_p]:my-3 [&_p]:text-xs">
+    <div className="flex min-h-[calc(100vh-190px)] flex-col items-center justify-center text-center text-muted-foreground [&_p]:my-3 [&_p]:text-xs">
       <LoaderCircle
         className="animate-spin motion-reduce:animate-none"
         size={24}
@@ -176,9 +176,11 @@ function ErrorState({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex min-h-[calc(100vh-190px)] flex-col items-center justify-center text-center text-[#898989] [&>svg]:text-red-400 [&_p]:my-3 [&_p]:text-xs">
+    <div className="flex min-h-[calc(100vh-190px)] flex-col items-center justify-center text-center text-muted-foreground [&>svg]:text-destructive [&_p]:my-3 [&_p]:text-xs">
       <AlertTriangle size={24} />
-      <h1 className="mt-3.5 text-xl font-normal text-[#efefef]">连接失败</h1>
+      <h1 className="mt-3.5 text-xl font-normal text-foreground-strong">
+        连接失败
+      </h1>
       <p>{message}</p>
       <Button onClick={onRetry} type="button" variant="primary">
         重新连接

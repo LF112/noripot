@@ -9,13 +9,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'border-primary bg-primary text-primary-foreground enabled:hover:border-[#58d9a0] enabled:hover:bg-[#58d9a0]',
+          'border-primary bg-primary text-primary-foreground enabled:hover:border-primary-hover enabled:hover:bg-primary-hover',
         secondary:
-          'border-[#393939] bg-[#1c1c1c] text-[#efefef] enabled:hover:border-[#4d4d4d] enabled:hover:bg-[#242424]',
+          'border-control bg-card text-foreground-strong enabled:hover:border-control-hover enabled:hover:bg-secondary',
         danger:
-          'border-red-400/30 bg-transparent text-red-300 enabled:hover:border-red-400/25 enabled:hover:bg-red-400/6 enabled:hover:text-red-400',
+          'border-destructive/30 bg-transparent text-destructive enabled:hover:border-destructive/25 enabled:hover:bg-destructive/6 enabled:hover:text-destructive',
         ghost:
-          'border-transparent bg-transparent text-[#898989] enabled:hover:border-[#363636] enabled:hover:bg-[#242424] enabled:hover:text-[#fafafa]',
+          'border-transparent bg-transparent text-muted-foreground enabled:hover:border-border-strong enabled:hover:bg-secondary enabled:hover:text-foreground',
       },
       size: {
         default: '',

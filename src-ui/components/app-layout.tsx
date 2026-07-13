@@ -4,13 +4,15 @@ import {
   ChevronRight,
   GitBranch,
   LayoutDashboard,
+  Moon,
   Network,
   RefreshCw,
   Sprout,
+  Sun,
   Timer,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '../lib/utils';
 import type { ViewKey } from '../types';
 import { IconButton } from './ui';
@@ -43,19 +45,35 @@ export function AppLayout({
   onRefresh,
 }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+  );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    try {
+      localStorage.setItem('noripot-theme', theme);
+    } catch {
+      // Theme switching still works when storage is unavailable.
+    }
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'dark' ? '#171717' : '#fafafa');
+  }, [theme]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-20 flex w-[232px] flex-col border-r border-[#2e2e2e] bg-[#141414] transition-[width] duration-180 ease-out motion-reduce:transition-none max-[720px]:hidden',
+          'fixed inset-y-0 left-0 z-20 flex w-[232px] flex-col border-r border-border bg-surface-inset transition-[width] duration-180 ease-out motion-reduce:transition-none max-[720px]:hidden',
           collapsed && 'w-[72px]',
         )}
         data-state={collapsed ? 'collapsed' : 'expanded'}
       >
         <div
           className={cn(
-            'flex h-[66px] items-center gap-3 overflow-hidden border-b border-[#242424] px-[18px]',
+            'flex h-[66px] items-center gap-3 overflow-hidden border-b border-secondary px-[18px]',
             collapsed && 'justify-center px-0',
           )}
         >
@@ -69,7 +87,7 @@ export function AppLayout({
             )}
           >
             <span>NoriPot</span>
-            <small className="font-mono text-[10px] leading-[1.4] text-[#898989] uppercase">
+            <small className="font-mono text-[10px] leading-[1.4] text-muted-foreground uppercase">
               CONTROL PLANE
             </small>
           </div>
@@ -85,10 +103,10 @@ export function AppLayout({
               <button
                 aria-current={active === item.key ? 'page' : undefined}
                 className={cn(
-                  'flex h-10 w-full cursor-pointer items-center gap-3 overflow-hidden rounded-md border border-transparent px-[11px] text-left text-[13px] font-medium whitespace-nowrap text-[#898989] hover:bg-[#1c1c1c] hover:text-[#efefef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70',
+                  'flex h-10 w-full cursor-pointer items-center gap-3 overflow-hidden rounded-md border border-transparent px-[11px] text-left text-[13px] font-medium whitespace-nowrap text-muted-foreground hover:bg-surface-hover hover:text-foreground-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70',
                   collapsed && 'justify-center px-0 [&>span]:hidden',
                   active === item.key &&
-                    'border-[#2e2e2e] bg-[#202020] text-[#fafafa] [&>svg]:text-primary',
+                    'border-border bg-muted text-foreground [&>svg]:text-primary',
                 )}
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
@@ -104,7 +122,7 @@ export function AppLayout({
 
         <div
           className={cn(
-            'flex min-h-[66px] items-center justify-between gap-2 overflow-hidden border-t border-[#242424] p-3',
+            'flex min-h-[66px] items-center justify-between gap-2 overflow-hidden border-t border-secondary p-3',
             collapsed && 'justify-center',
           )}
         >
@@ -116,7 +134,7 @@ export function AppLayout({
           >
             <span className="size-[7px] shrink-0 rounded-full bg-primary" />
             <div>
-              <strong className="text-[11px] font-medium text-[#b4b4b4]">
+              <strong className="text-[11px] font-medium text-foreground-secondary">
                 服务已连接
               </strong>
             </div>
@@ -137,25 +155,35 @@ export function AppLayout({
           collapsed && 'ml-[72px] w-[calc(100%-72px)]',
         )}
       >
-        <header className="sticky top-0 z-15 flex h-[66px] items-center justify-end gap-3 border-b border-[#2e2e2e]/88 bg-background/92 px-7 backdrop-blur-xl max-[720px]:h-14 max-[720px]:justify-between max-[720px]:px-4">
+        <header className="sticky top-0 z-15 flex h-[66px] items-center justify-end gap-3 border-b border-border/88 bg-background/92 px-7 backdrop-blur-xl max-[720px]:h-14 max-[720px]:justify-between max-[720px]:px-4">
           <div className="hidden items-center gap-2 text-[13px] font-medium text-primary max-[720px]:flex">
             <Sprout size={18} />
             <span>NoriPot</span>
           </div>
-          <IconButton label="刷新数据" onClick={onRefresh} disabled={loading}>
-            <RefreshCw
-              className={
-                loading ? 'animate-spin motion-reduce:animate-none' : ''
+          <div className="flex items-center gap-1.5">
+            <IconButton
+              label={theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
+              onClick={() =>
+                setTheme((current) => (current === 'light' ? 'dark' : 'light'))
               }
-              size={16}
-            />
-          </IconButton>
+            >
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+            </IconButton>
+            <IconButton label="刷新数据" onClick={onRefresh} disabled={loading}>
+              <RefreshCw
+                className={
+                  loading ? 'animate-spin motion-reduce:animate-none' : ''
+                }
+                size={16}
+              />
+            </IconButton>
+          </div>
         </header>
         <main className="mx-auto w-full max-w-[1320px] px-[38px] pt-9 pb-14 max-[720px]:px-4 max-[720px]:pt-6 max-[720px]:pb-[92px]">
           {children}
         </main>
         <nav
-          className="fixed inset-x-0 bottom-0 z-30 hidden min-h-16 grid-cols-5 border-t border-[#2e2e2e] bg-[#141414]/96 px-1 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] backdrop-blur-xl max-[720px]:grid"
+          className="fixed inset-x-0 bottom-0 z-30 hidden min-h-16 grid-cols-5 border-t border-border bg-surface-inset/96 px-1 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] backdrop-blur-xl max-[720px]:grid"
           aria-label="移动端导航"
         >
           {navigation.map((item) => {
@@ -164,7 +192,7 @@ export function AppLayout({
               <button
                 aria-current={active === item.key ? 'page' : undefined}
                 className={cn(
-                  'flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-transparent text-[9px] text-[#646464] focus-visible:outline-2 focus-visible:outline-primary/70',
+                  'flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-transparent text-[9px] text-foreground-subtle focus-visible:outline-2 focus-visible:outline-primary/70',
                   active === item.key && 'text-primary',
                 )}
                 key={item.key}

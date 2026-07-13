@@ -53,10 +53,10 @@ export function Repositories({
       />
 
       {repositories.length ? (
-        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
           {repositories.map((repo) => (
             <article
-              className="grid min-h-[94px] grid-cols-[minmax(300px,1fr)_180px_120px] items-center gap-5 border-b border-[#242424] px-[18px] py-3 last:border-b-0 max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:gap-3"
+              className="grid min-h-[94px] grid-cols-[minmax(300px,1fr)_180px_120px] items-center gap-5 border-b border-secondary px-[18px] py-3 last:border-b-0 max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:gap-3"
               key={repo.pathname}
             >
               <div className="flex min-w-0 items-center gap-3">
@@ -64,18 +64,18 @@ export function Repositories({
                   <GitBranch size={18} />
                 </span>
                 <div>
-                  <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                  <strong className="block truncate text-[13px] font-medium text-foreground-strong">
                     {repo.pathname}
                   </strong>
                   <a
-                    className="mt-1 block truncate text-[11px] text-[#898989] no-underline hover:text-[#00c573]"
+                    className="mt-1 block truncate text-[11px] text-muted-foreground no-underline hover:text-primary"
                     href={publicRepositoryUrl(repo.url)}
                     rel="noreferrer"
                     target="_blank"
                   >
                     {maskRepositoryUrl(repo.url)}
                   </a>
-                  <div className="mt-[7px] flex min-w-0 items-center gap-[7px] text-[10px] text-[#646464]">
+                  <div className="mt-[7px] flex min-w-0 items-center gap-[7px] text-[10px] text-foreground-subtle">
                     <GitCommitHorizontal
                       className="shrink-0 text-primary"
                       size={13}
@@ -83,7 +83,7 @@ export function Repositories({
                     {repo.commitHash ? (
                       <>
                         <code
-                          className="shrink-0 text-[10px] text-[#b4b4b4]"
+                          className="shrink-0 text-[10px] text-foreground-secondary"
                           title={repo.commitHash}
                         >
                           {repo.commitHash.slice(0, 8)}
@@ -101,8 +101,8 @@ export function Repositories({
                   </div>
                 </div>
               </div>
-              <div className="flex min-w-0 flex-col items-start gap-[7px] max-[720px]:col-start-1 max-[720px]:row-start-2 [&>span]:flex [&>span]:items-center [&>span]:gap-[5px] [&>span]:text-[9px] [&>span]:whitespace-nowrap [&>span]:text-[#646464]">
-                <div className="inline-flex w-max max-w-full items-center gap-1.5 overflow-hidden rounded-full border border-[#363636] bg-[#171717] px-[9px] py-[5px] font-mono text-[10px] whitespace-nowrap text-[#898989]">
+              <div className="flex min-w-0 flex-col items-start gap-[7px] max-[720px]:col-start-1 max-[720px]:row-start-2 [&>span]:flex [&>span]:items-center [&>span]:gap-[5px] [&>span]:text-[9px] [&>span]:whitespace-nowrap [&>span]:text-foreground-subtle">
+                <div className="inline-flex w-max max-w-full items-center gap-1.5 overflow-hidden rounded-full border border-border-strong bg-background px-[9px] py-[5px] font-mono text-[10px] whitespace-nowrap text-muted-foreground">
                   <GitBranch size={13} />
                   {repo.branch || '默认分支'}
                 </div>
@@ -156,7 +156,7 @@ export function Repositories({
           ))}
         </section>
       ) : (
-        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
           <EmptyState
             action={
               <Button onClick={() => setEditing('new')} variant="primary">
@@ -321,10 +321,10 @@ function RepositoryForm({
             </div>
             {proxyTest ? (
               <div
-                className={`grid grid-cols-[16px_minmax(0,1fr)] items-start gap-[7px] rounded-md border bg-[#141414] px-2.5 py-2 text-[10px] leading-[1.5] [overflow-wrap:anywhere] [&>svg]:mt-px ${
+                className={`grid grid-cols-[16px_minmax(0,1fr)] items-start gap-[7px] rounded-md border bg-surface-inset px-2.5 py-2 text-[10px] leading-[1.5] [overflow-wrap:anywhere] [&>svg]:mt-px ${
                   proxyTest.type === 'success'
                     ? 'border-primary/30 text-primary'
-                    : 'border-red-400/30 text-red-400'
+                    : 'border-destructive/30 text-destructive'
                 }`}
                 role={proxyTest.type === 'error' ? 'alert' : 'status'}
               >
@@ -337,7 +337,7 @@ function RepositoryForm({
               </div>
             ) : null}
           </Field>
-          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-border px-5 py-[15px]">
             <Button onClick={onClose} type="button">
               取消
             </Button>

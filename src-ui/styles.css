@@ -1,24 +1,121 @@
 @import "tailwindcss";
 @source "./";
 
+:root {
+  color-scheme: light;
+  --app-background: #fafafa;
+  --app-foreground: #18181b;
+  --app-card: #ffffff;
+  --app-card-foreground: #18181b;
+  --app-popover: #ffffff;
+  --app-popover-foreground: #18181b;
+  --app-primary: #18794e;
+  --app-primary-hover: #116b43;
+  --app-primary-foreground: #ffffff;
+  --app-secondary: #f4f4f5;
+  --app-secondary-foreground: #27272a;
+  --app-muted: #f4f4f5;
+  --app-muted-foreground: #52525b;
+  --app-accent: #eceeef;
+  --app-accent-foreground: #18181b;
+  --app-destructive: #dc2626;
+  --app-warning: #a16207;
+  --app-info: #0369a1;
+  --app-special: #6d28d9;
+  --app-border: #e5e7eb;
+  --app-border-subtle: #f0f1f2;
+  --app-border-strong: #d4d4d8;
+  --app-control: #d4d4d8;
+  --app-control-strong: #a1a1aa;
+  --app-control-hover: #a1a1aa;
+  --app-surface-inset: #fafafa;
+  --app-surface-row: #fcfcfc;
+  --app-surface-hover: #f4f4f5;
+  --app-placeholder: #a1a1aa;
+  --app-foreground-subtle: #71717a;
+  --app-foreground-secondary: #3f3f46;
+  --app-foreground-strong: #27272a;
+  --app-overlay: rgb(24 24 27 / 42%);
+  --app-tooltip: #27272a;
+  --app-tooltip-foreground: #fafafa;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --app-background: #171717;
+  --app-foreground: #fafafa;
+  --app-card: #191919;
+  --app-card-foreground: #fafafa;
+  --app-popover: #202020;
+  --app-popover-foreground: #fafafa;
+  --app-primary: #3ecf8e;
+  --app-primary-hover: #58d9a0;
+  --app-primary-foreground: #0f0f0f;
+  --app-secondary: #242424;
+  --app-secondary-foreground: #efefef;
+  --app-muted: #202020;
+  --app-muted-foreground: #898989;
+  --app-accent: #292929;
+  --app-accent-foreground: #fafafa;
+  --app-destructive: #f87171;
+  --app-warning: #facc15;
+  --app-info: #7dd3fc;
+  --app-special: #c4b5fd;
+  --app-border: #2e2e2e;
+  --app-border-subtle: #242424;
+  --app-border-strong: #363636;
+  --app-control: #393939;
+  --app-control-strong: #434343;
+  --app-control-hover: #4d4d4d;
+  --app-surface-inset: #141414;
+  --app-surface-row: #161616;
+  --app-surface-hover: #1c1c1c;
+  --app-placeholder: #595959;
+  --app-foreground-subtle: #646464;
+  --app-foreground-secondary: #b4b4b4;
+  --app-foreground-strong: #efefef;
+  --app-overlay: rgb(0 0 0 / 66%);
+  --app-tooltip: #292929;
+  --app-tooltip-foreground: #efefef;
+}
+
 @theme inline {
-  --color-background: #171717;
-  --color-foreground: #fafafa;
-  --color-card: #191919;
-  --color-card-foreground: #fafafa;
-  --color-popover: #202020;
-  --color-popover-foreground: #fafafa;
-  --color-primary: #3ecf8e;
-  --color-primary-foreground: #0f0f0f;
-  --color-secondary: #242424;
-  --color-secondary-foreground: #efefef;
-  --color-muted: #202020;
-  --color-muted-foreground: #898989;
-  --color-accent: #292929;
-  --color-accent-foreground: #fafafa;
-  --color-destructive: #f87171;
-  --color-border: #2e2e2e;
-  --color-ring: #3ecf8e;
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
+  --color-card: var(--app-card);
+  --color-card-foreground: var(--app-card-foreground);
+  --color-popover: var(--app-popover);
+  --color-popover-foreground: var(--app-popover-foreground);
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+  --color-primary-foreground: var(--app-primary-foreground);
+  --color-secondary: var(--app-secondary);
+  --color-secondary-foreground: var(--app-secondary-foreground);
+  --color-muted: var(--app-muted);
+  --color-muted-foreground: var(--app-muted-foreground);
+  --color-accent: var(--app-accent);
+  --color-accent-foreground: var(--app-accent-foreground);
+  --color-destructive: var(--app-destructive);
+  --color-warning: var(--app-warning);
+  --color-info: var(--app-info);
+  --color-special: var(--app-special);
+  --color-border: var(--app-border);
+  --color-border-subtle: var(--app-border-subtle);
+  --color-border-strong: var(--app-border-strong);
+  --color-control: var(--app-control);
+  --color-control-strong: var(--app-control-strong);
+  --color-control-hover: var(--app-control-hover);
+  --color-surface-inset: var(--app-surface-inset);
+  --color-surface-row: var(--app-surface-row);
+  --color-surface-hover: var(--app-surface-hover);
+  --color-placeholder: var(--app-placeholder);
+  --color-foreground-subtle: var(--app-foreground-subtle);
+  --color-foreground-secondary: var(--app-foreground-secondary);
+  --color-foreground-strong: var(--app-foreground-strong);
+  --color-overlay: var(--app-overlay);
+  --color-tooltip: var(--app-tooltip);
+  --color-tooltip-foreground: var(--app-tooltip-foreground);
+  --color-ring: var(--app-primary);
   --radius-sm: 6px;
   --radius-md: 8px;
 }
@@ -38,8 +135,8 @@
 
   body {
     min-width: 320px;
-    color: #fafafa;
-    background: #171717;
+    color: var(--app-foreground);
+    background: var(--app-background);
     font-family:
       Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
       sans-serif;

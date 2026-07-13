@@ -88,35 +88,36 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
       />
 
       <section
-        className="mb-6 grid grid-cols-4 overflow-hidden rounded-lg border border-[#2e2e2e] max-[1050px]:grid-cols-2 max-[520px]:grid-cols-1"
+        className="mb-6 grid grid-cols-4 overflow-hidden rounded-lg border border-border max-[1050px]:grid-cols-2 max-[520px]:grid-cols-1"
         aria-label="系统统计"
       >
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <article
-              className="grid min-h-32 grid-cols-[34px_1fr] grid-rows-[auto_1fr_auto] gap-x-3 gap-y-1 border-r border-[#2e2e2e] bg-[#191919] p-5 last:border-r-0 max-[1050px]:nth-2:border-r-0 max-[1050px]:nth-[-n+2]:border-b max-[1050px]:nth-[-n+2]:border-[#2e2e2e] max-[720px]:min-h-[116px] max-[720px]:p-4 max-[520px]:border-r-0 max-[520px]:border-b max-[520px]:last:border-b-0"
+              className="grid min-h-32 grid-cols-[34px_1fr] grid-rows-[auto_1fr_auto] gap-x-3 gap-y-1 border-r border-border bg-card p-5 last:border-r-0 max-[1050px]:nth-2:border-r-0 max-[1050px]:nth-[-n+2]:border-b max-[1050px]:nth-[-n+2]:border-border max-[720px]:min-h-[116px] max-[720px]:p-4 max-[520px]:border-r-0 max-[520px]:border-b max-[520px]:last:border-b-0"
               key={stat.label}
             >
               <div
                 className={cn(
-                  'row-span-3 grid size-[34px] place-items-center rounded-[7px] border border-[#363636] bg-[#202020] text-[#b4b4b4]',
+                  'row-span-3 grid size-[34px] place-items-center rounded-[7px] border border-border-strong bg-muted text-foreground-secondary',
                   stat.tone === 'green' && 'border-primary/25 text-primary',
-                  stat.tone === 'blue' && 'border-sky-300/25 text-sky-300',
-                  stat.tone === 'yellow' &&
-                    'border-yellow-400/25 text-yellow-400',
-                  stat.tone === 'purple' &&
-                    'border-violet-300/25 text-violet-300',
-                  stat.tone === 'red' && 'border-red-400/25 text-red-400',
+                  stat.tone === 'blue' && 'border-info/25 text-info',
+                  stat.tone === 'yellow' && 'border-warning/25 text-warning',
+                  stat.tone === 'purple' && 'border-special/25 text-special',
+                  stat.tone === 'red' &&
+                    'border-destructive/25 text-destructive',
                 )}
               >
                 <Icon size={18} />
               </div>
-              <span className="text-xs text-[#898989]">{stat.label}</span>
+              <span className="text-xs text-muted-foreground">
+                {stat.label}
+              </span>
               <strong className="self-center text-[28px] font-normal max-[720px]:text-2xl">
                 {stat.value}
               </strong>
-              <small className="text-[11px] text-[#646464]">
+              <small className="text-[11px] text-foreground-subtle">
                 {stat.detail}
               </small>
             </article>
@@ -125,10 +126,10 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
       </section>
 
       <div className="grid grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)] gap-6 max-[1050px]:grid-cols-1">
-        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
-          <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#2e2e2e] px-[18px] py-[15px]">
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-border px-[18px] py-[15px]">
             <div>
-              <span className="font-mono text-[10px] leading-[1.4] text-[#898989] uppercase">
+              <span className="font-mono text-[10px] leading-[1.4] text-muted-foreground uppercase">
                 RUNTIME
               </span>
               <h2 className="mt-[5px] text-base font-normal">实例状态</h2>
@@ -139,10 +140,10 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
                 .map(({ status, label }) => (
                   <span
                     className={cn(
-                      'inline-flex items-center gap-[5px] text-[10px] whitespace-nowrap text-[#898989] [&>i]:size-1.5 [&>i]:rounded-full [&>i]:bg-current',
+                      'inline-flex items-center gap-[5px] text-[10px] whitespace-nowrap text-muted-foreground [&>i]:size-1.5 [&>i]:rounded-full [&>i]:bg-current',
                       status === 'running' && 'text-primary',
-                      status === 'restarting' && 'text-yellow-400',
-                      status === 'failed' && 'text-red-400',
+                      status === 'restarting' && 'text-warning',
+                      status === 'failed' && 'text-destructive',
                     )}
                     key={status}
                   >
@@ -156,19 +157,19 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
             <div className="flex flex-col">
               {data.scripts.slice(0, 6).map((script) => (
                 <div
-                  className="flex min-h-16 items-center justify-between gap-4 border-b border-[#242424] px-[18px] py-2.5 last:border-b-0"
+                  className="flex min-h-16 items-center justify-between gap-4 border-b border-secondary px-[18px] py-2.5 last:border-b-0"
                   key={script.pathname}
                 >
                   <div className="flex min-w-0 items-center gap-[11px]">
                     <TerminalSquare
-                      className="shrink-0 text-[#646464]"
+                      className="shrink-0 text-foreground-subtle"
                       size={16}
                     />
                     <div>
-                      <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                      <strong className="block truncate text-[13px] font-medium text-foreground-strong">
                         {script.pathname}
                       </strong>
-                      <small className="mt-[3px] block text-[10px] text-[#646464]">
+                      <small className="mt-[3px] block text-[10px] text-foreground-subtle">
                         {script.pid ? `PID ${script.pid}` : '无活动进程'}
                       </small>
                     </div>
@@ -186,10 +187,10 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
           )}
         </section>
 
-        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
-          <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#2e2e2e] px-[18px] py-[15px]">
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
+          <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-border px-[18px] py-[15px]">
             <div>
-              <span className="font-mono text-[10px] leading-[1.4] text-[#898989] uppercase">
+              <span className="font-mono text-[10px] leading-[1.4] text-muted-foreground uppercase">
                 RECENT ACTIVITY
               </span>
               <h2 className="mt-[5px] text-base font-normal">最近活动</h2>
@@ -205,28 +206,28 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
             <div className="flex flex-col">
               {data.recentLogs.slice(0, 8).map((log) => (
                 <div
-                  className="grid min-h-[58px] grid-cols-[7px_minmax(0,1fr)] gap-[11px] border-b border-[#242424] px-[18px] py-[11px] last:border-b-0"
+                  className="grid min-h-[58px] grid-cols-[7px_minmax(0,1fr)] gap-[11px] border-b border-secondary px-[18px] py-[11px] last:border-b-0"
                   key={log.id}
                 >
                   <span
                     className={cn(
-                      'mt-1.5 size-1.5 rounded-full bg-[#646464]',
+                      'mt-1.5 size-1.5 rounded-full bg-foreground-subtle',
                       log.level === 'SUCCESS' && 'bg-primary',
-                      log.level === 'ERROR' && 'bg-red-400',
-                      log.level === 'WARN' && 'bg-yellow-400',
-                      log.level === 'INFO' && 'bg-sky-300',
+                      log.level === 'ERROR' && 'bg-destructive',
+                      log.level === 'WARN' && 'bg-warning',
+                      log.level === 'INFO' && 'bg-info',
                     )}
                   />
                   <div>
                     <div className="flex items-center justify-between gap-3">
-                      <strong className="text-[10px] font-medium text-[#b4b4b4] uppercase">
+                      <strong className="text-[10px] font-medium text-foreground-secondary uppercase">
                         {log.context}
                       </strong>
-                      <time className="font-mono text-[9px] text-[#646464]">
+                      <time className="font-mono text-[9px] text-foreground-subtle">
                         {formatTime(log.createdAt)}
                       </time>
                     </div>
-                    <p className="mt-1 mb-0 line-clamp-2 font-mono text-[10px] leading-[1.4] text-[#898989]">
+                    <p className="mt-1 mb-0 line-clamp-2 font-mono text-[10px] leading-[1.4] text-muted-foreground">
                       {log.content}
                     </p>
                   </div>
@@ -284,9 +285,9 @@ function RuntimeActivityLogs({
       title="最近活动日志"
       onClose={onClose}
     >
-      <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-[#141414]">
-        <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-[#2e2e2e] bg-[#141414]/94 px-3.5 py-1.5 backdrop-blur-[10px]">
-          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
+      <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-surface-inset">
+        <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-border bg-surface-inset/94 px-3.5 py-1.5 backdrop-blur-[10px]">
+          <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-foreground-subtle [&>svg]:text-primary">
             <CircleDot
               className={isValidating ? 'animate-pulse' : ''}
               size={11}
@@ -309,7 +310,7 @@ function RuntimeActivityLogs({
           </IconButton>
         </div>
         {isLoading ? (
-          <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-[#898989]">
+          <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-muted-foreground">
             <LoaderCircle
               className="animate-spin motion-reduce:animate-none"
               size={20}
@@ -318,7 +319,7 @@ function RuntimeActivityLogs({
           </div>
         ) : null}
         {error ? (
-          <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-red-400">
+          <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-destructive">
             <span>
               {error instanceof Error ? error.message : '日志加载失败'}
             </span>

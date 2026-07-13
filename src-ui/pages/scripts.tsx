@@ -139,17 +139,17 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
       />
 
       <section className="mb-3.5 flex items-center justify-between gap-4">
-        <label className="flex h-9 w-[min(320px,100%)] items-center gap-[9px] rounded-md border border-[#363636] bg-[#1c1c1c] px-[11px] text-[#646464] focus-within:border-primary/55">
+        <label className="flex h-9 w-[min(320px,100%)] items-center gap-[9px] rounded-md border border-border-strong bg-surface-hover px-[11px] text-foreground-subtle focus-within:border-primary/55">
           <Search size={16} />
           <input
-            className="w-full border-0 bg-transparent text-xs text-[#efefef] outline-none placeholder:text-[#595959]"
+            className="w-full border-0 bg-transparent text-xs text-foreground-strong outline-none placeholder:text-placeholder"
             aria-label="搜索脚本"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="搜索脚本路径"
             value={query}
           />
         </label>
-        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
+        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-foreground-subtle [&>svg]:text-primary">
           {isValidating || logsValidating ? (
             <RefreshCw
               className="animate-spin motion-reduce:animate-none"
@@ -162,10 +162,10 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
         </span>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919] max-[1050px]:overflow-x-auto">
+      <section className="overflow-hidden rounded-lg border border-border bg-card max-[1050px]:overflow-x-auto">
         {filtered.length ? (
           <div className="w-full max-[1050px]:min-w-[820px]">
-            <div className="grid min-h-[42px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-[#2e2e2e] bg-[#171717] px-[18px] text-[10px] text-[#646464] uppercase">
+            <div className="grid min-h-[42px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-border bg-background px-[18px] text-[10px] text-foreground-subtle uppercase">
               <span>脚本</span>
               <span>状态</span>
               <span>进程</span>
@@ -179,10 +179,10 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                 latestLogByPathname.get(script.pathname) ?? null;
               return (
                 <div
-                  className="border-b border-[#242424] last:border-b-0"
+                  className="border-b border-secondary last:border-b-0"
                   key={script.pathname}
                 >
-                  <div className="grid min-h-[66px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-[#2e2e2e] px-[18px] text-xs text-[#b4b4b4] hover:bg-[#1c1c1c]">
+                  <div className="grid min-h-[66px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-border px-[18px] text-xs text-foreground-secondary hover:bg-surface-hover">
                     <div
                       className="flex min-w-0 items-center gap-[11px]"
                       data-label="脚本"
@@ -191,10 +191,10 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                         <TerminalSquare size={17} />
                       </span>
                       <div>
-                        <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                        <strong className="block truncate text-[13px] font-medium text-foreground-strong">
                           {script.pathname}
                         </strong>
-                        <small className="mt-[3px] block text-[10px] text-[#646464]">
+                        <small className="mt-[3px] block text-[10px] text-foreground-subtle">
                           {Object.keys(script.env).length} 个环境变量
                         </small>
                       </div>
@@ -203,7 +203,7 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                       <StatusBadge status={script.status} />
                     </div>
                     <span
-                      className="font-mono text-[#646464]"
+                      className="font-mono text-foreground-subtle"
                       data-label="进程"
                     >
                       {script.pid ? `PID ${script.pid}` : '—'}
@@ -259,17 +259,18 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                   </div>
                   <div
                     className={cn(
-                      'grid min-h-[38px] grid-cols-[14px_auto_auto_minmax(0,1fr)_auto] items-center gap-[9px] bg-[#161616] px-[18px] py-[7px] text-[10px] text-[#646464] [&>p]:m-0 [&>p]:truncate [&>p]:font-mono [&>p]:text-[#b4b4b4] [&>time]:font-mono [&>time]:text-[9px] [&>time]:text-[#646464]',
-                      latestLog?.level === 'ERROR' && '[&>svg]:text-red-400',
+                      'grid min-h-[38px] grid-cols-[14px_auto_auto_minmax(0,1fr)_auto] items-center gap-[9px] bg-surface-row px-[18px] py-[7px] text-[10px] text-foreground-subtle [&>p]:m-0 [&>p]:truncate [&>p]:font-mono [&>p]:text-foreground-secondary [&>time]:font-mono [&>time]:text-[9px] [&>time]:text-foreground-subtle',
+                      latestLog?.level === 'ERROR' &&
+                        '[&>svg]:text-destructive',
                       latestLog?.level === 'SUCCESS' && '[&>svg]:text-primary',
-                      latestLog?.level === 'WARN' && '[&>svg]:text-yellow-400',
+                      latestLog?.level === 'WARN' && '[&>svg]:text-warning',
                     )}
                   >
                     <ScrollText size={13} />
-                    <span className="text-[#898989]">最近执行</span>
+                    <span className="text-muted-foreground">最近执行</span>
                     {latestLog ? (
                       <>
-                        <span className="rounded-sm border border-[#363636] px-[5px] py-0.5 font-mono text-[9px] text-[#898989]">
+                        <span className="rounded-sm border border-border-strong px-[5px] py-0.5 font-mono text-[9px] text-muted-foreground">
                           {latestLog.level}
                         </span>
                         <p title={latestLog.content}>{latestLog.content}</p>
@@ -471,7 +472,7 @@ function ScriptSettings({
           <fieldset className="m-0 min-w-0 border-0 p-0">
             <div className="flex min-h-9 items-center justify-between gap-3">
               <div className="flex flex-col gap-[3px]">
-                <legend className="text-[11px] font-medium text-[#b4b4b4]">
+                <legend className="text-[11px] font-medium text-foreground-secondary">
                   环境变量
                 </legend>
               </div>
@@ -480,7 +481,7 @@ function ScriptSettings({
                   onClick={() =>
                     setEnvironment((rows) => [...rows, createEnvironmentRow()])
                   }
-                  className="text-[#00c573]"
+                  className="text-primary"
                   size="sm"
                   type="button"
                   variant="ghost"
@@ -490,19 +491,19 @@ function ScriptSettings({
                 </Button>
               ) : null}
             </div>
-            <div className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#141414]">
+            <div className="overflow-hidden rounded-lg border border-border bg-surface-inset">
               <div
                 aria-label="环境变量格式"
-                className="grid grid-cols-5 gap-[3px] border-b border-[#2e2e2e] bg-[#171717] p-1.5 max-[520px]:grid-cols-3"
+                className="grid grid-cols-5 gap-[3px] border-b border-border bg-background p-1.5 max-[520px]:grid-cols-3"
                 role="tablist"
               >
                 {environmentModes.map((mode) => (
                   <button
                     aria-selected={environmentMode === mode.value}
                     className={cn(
-                      'flex min-h-[30px] min-w-0 cursor-pointer items-center justify-center gap-[5px] rounded-full border border-transparent bg-transparent text-[11px] font-medium text-[#898989] hover:border-[#363636] hover:bg-[#202020] hover:text-[#efefef] focus-visible:outline-2 focus-visible:outline-primary/70 max-[520px]:min-h-[34px]',
+                      'flex min-h-[30px] min-w-0 cursor-pointer items-center justify-center gap-[5px] rounded-full border border-transparent bg-transparent text-[11px] font-medium text-muted-foreground hover:border-border-strong hover:bg-muted hover:text-foreground-strong focus-visible:outline-2 focus-visible:outline-primary/70 max-[520px]:min-h-[34px]',
                       environmentMode === mode.value &&
-                        'border-primary/30 bg-[#242424] text-primary',
+                        'border-primary/30 bg-secondary text-primary',
                     )}
                     key={mode.value}
                     onClick={() => changeEnvironmentMode(mode.value)}
@@ -557,7 +558,7 @@ function ScriptSettings({
               ) : (
                 <textarea
                   aria-label={`${environmentMode} 环境变量`}
-                  className="block min-h-[218px] w-full resize-y border-0 bg-[#141414] px-4 py-3.5 font-mono text-xs leading-[1.65] text-[#efefef] outline-none placeholder:text-[#4d4d4d] focus:shadow-[inset_0_0_0_1px_rgb(62_207_142/45%)] max-[520px]:min-h-[190px]"
+                  className="block min-h-[218px] w-full resize-y border-0 bg-surface-inset px-4 py-3.5 font-mono text-xs leading-[1.65] text-foreground-strong outline-none placeholder:text-control-hover focus:shadow-[inset_0_0_0_1px_var(--app-primary)] max-[520px]:min-h-[190px]"
                   onChange={(event) => {
                     setEnvironmentSource(event.target.value);
                     setError('');
@@ -578,9 +579,9 @@ function ScriptSettings({
             </div>
           </fieldset>
           {error ? (
-            <p className="m-0 text-[11px] text-red-400">{error}</p>
+            <p className="m-0 text-[11px] text-destructive">{error}</p>
           ) : null}
-          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-border px-5 py-[15px]">
             <Button onClick={onClose} type="button">
               取消
             </Button>
@@ -635,9 +636,9 @@ function ScriptLogs({
       onClose={onClose}
     >
       {script ? (
-        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-[#141414]">
-          <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-[#2e2e2e] bg-[#141414]/94 px-3.5 py-1.5 backdrop-blur-[10px]">
-            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
+        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-surface-inset">
+          <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-border bg-surface-inset/94 px-3.5 py-1.5 backdrop-blur-[10px]">
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-foreground-subtle [&>svg]:text-primary">
               <CircleDot
                 className={isValidating ? 'animate-pulse' : ''}
                 size={11}
@@ -684,7 +685,7 @@ function ScriptLogs({
           </div>
 
           {isLoading ? (
-            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-[#898989]">
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-muted-foreground">
               <LoaderCircle
                 className="animate-spin motion-reduce:animate-none"
                 size={20}
@@ -693,7 +694,7 @@ function ScriptLogs({
             </div>
           ) : null}
           {error ? (
-            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-red-400">
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-destructive">
               <span>
                 {error instanceof Error ? error.message : '日志加载失败'}
               </span>

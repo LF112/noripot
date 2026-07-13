@@ -91,7 +91,7 @@ export function Gateways({
         <section className="grid grid-cols-3 gap-4 max-[1050px]:grid-cols-2 max-[720px]:grid-cols-1">
           {gateways.map((gateway) => (
             <article
-              className="min-w-0 rounded-lg border border-[#2e2e2e] bg-[#191919] p-[18px] hover:border-[#393939]"
+              className="min-w-0 rounded-lg border border-border bg-card p-[18px] hover:border-control"
               key={gateway.id}
             >
               <header className="flex items-center justify-between">
@@ -125,18 +125,22 @@ export function Gateways({
                 <strong className="truncate text-lg font-normal">
                   {gateway.path}
                 </strong>
-                <ExternalLink className="text-[#646464]" size={14} />
+                <ExternalLink className="text-foreground-subtle" size={14} />
               </div>
-              <dl className="m-0 flex flex-col gap-2.5 border-t border-[#2e2e2e] pt-[15px]">
+              <dl className="m-0 flex flex-col gap-2.5 border-t border-border pt-[15px]">
                 <div className="flex min-w-0 justify-between gap-3.5">
-                  <dt className="text-[11px] text-[#646464]">目标脚本</dt>
-                  <dd className="m-0 truncate text-right text-[11px] text-[#b4b4b4]">
+                  <dt className="text-[11px] text-foreground-subtle">
+                    目标脚本
+                  </dt>
+                  <dd className="m-0 truncate text-right text-[11px] text-foreground-secondary">
                     {gateway.pathname}
                   </dd>
                 </div>
                 <div className="flex min-w-0 justify-between gap-3.5">
-                  <dt className="text-[11px] text-[#646464]">上游端口</dt>
-                  <dd className="m-0 truncate text-right font-mono text-[11px] text-[#b4b4b4]">
+                  <dt className="text-[11px] text-foreground-subtle">
+                    上游端口
+                  </dt>
+                  <dd className="m-0 truncate text-right font-mono text-[11px] text-foreground-secondary">
                     127.0.0.1:{gateway.port}
                   </dd>
                 </div>
@@ -145,7 +149,7 @@ export function Gateways({
           ))}
         </section>
       ) : (
-        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
+        <section className="overflow-hidden rounded-lg border border-border bg-card">
           <EmptyState
             action={
               <Button onClick={() => setEditing('new')} variant="primary">
@@ -211,7 +215,7 @@ export function Gateways({
               />
             </Field>
           </div>
-          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-border px-5 py-[15px]">
             <Button onClick={() => setEditing(null)} type="button">
               取消
             </Button>

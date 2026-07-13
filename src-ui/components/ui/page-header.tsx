@@ -17,13 +17,15 @@ export function PageHeader({
       data-slot="page-header"
     >
       <div>
-        <span className="font-mono text-[10px] leading-[1.4] text-[#898989] uppercase">
+        <span className="font-mono text-[10px] leading-[1.4] text-muted-foreground uppercase">
           {eyebrow}
         </span>
-        <h1 className="my-[7px] mt-2 text-[30px] leading-[1.1] font-normal text-[#fafafa] max-[720px]:text-[26px]">
+        <h1 className="my-[7px] mt-2 text-[30px] leading-[1.1] font-normal text-foreground max-[720px]:text-[26px]">
           {title}
         </h1>
-        <p className="m-0 text-sm leading-6 text-[#898989]">{description}</p>
+        <p className="m-0 text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
       </div>
       {actions ? (
         <div className="flex flex-wrap justify-end gap-2 max-[720px]:w-full max-[720px]:justify-start">

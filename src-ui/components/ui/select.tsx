@@ -14,7 +14,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        'flex min-h-[38px] w-full items-center justify-between gap-2 rounded-md border border-[#393939] bg-[#141414] px-2.5 py-2 text-left text-xs text-[#efefef] hover:border-[#4d4d4d] focus-visible:border-primary/65 focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none data-[state=open]:border-primary/65 data-[state=open]:ring-3 data-[state=open]:ring-primary/10 data-[placeholder]:text-[#595959] [&>span:first-child]:truncate [&>svg]:shrink-0 [&>svg]:text-[#646464]',
+        'flex min-h-[38px] w-full items-center justify-between gap-2 rounded-md border border-control bg-card px-2.5 py-2 text-left text-xs text-foreground-strong hover:border-control-hover focus-visible:border-primary/65 focus-visible:ring-3 focus-visible:ring-primary/10 focus-visible:outline-none data-[state=open]:border-primary/65 data-[state=open]:ring-3 data-[state=open]:ring-primary/10 data-[placeholder]:text-placeholder [&>span:first-child]:truncate [&>svg]:shrink-0 [&>svg]:text-foreground-subtle',
         className,
       )}
       data-slot="select-trigger"
@@ -39,7 +39,7 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          'z-90 max-h-[min(320px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-[#393939] bg-[#202020] text-[#efefef] data-[state=open]:animate-[select-in_140ms_cubic-bezier(0.16,1,0.3,1)] motion-reduce:data-[state=open]:animate-none',
+          'z-90 max-h-[min(320px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-control bg-popover text-popover-foreground data-[state=open]:animate-[select-in_140ms_cubic-bezier(0.16,1,0.3,1)] motion-reduce:data-[state=open]:animate-none',
           className,
         )}
         data-slot="select-content"
@@ -47,13 +47,13 @@ export function SelectContent({
         sideOffset={sideOffset}
         {...props}
       >
-        <SelectPrimitive.ScrollUpButton className="grid h-7 cursor-default place-items-center text-[#898989]">
+        <SelectPrimitive.ScrollUpButton className="grid h-7 cursor-default place-items-center text-muted-foreground">
           <ChevronUp aria-hidden="true" size={14} />
         </SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport className="p-1">
           {children}
         </SelectPrimitive.Viewport>
-        <SelectPrimitive.ScrollDownButton className="grid h-7 cursor-default place-items-center text-[#898989]">
+        <SelectPrimitive.ScrollDownButton className="grid h-7 cursor-default place-items-center text-muted-foreground">
           <ChevronDown aria-hidden="true" size={14} />
         </SelectPrimitive.ScrollDownButton>
       </SelectPrimitive.Content>
@@ -69,7 +69,7 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        'relative flex min-h-8 cursor-default items-center rounded-sm py-1.5 pr-8 pl-[9px] text-xs text-[#b4b4b4] outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-[#2a2a2a] data-[highlighted]:text-[#fafafa]',
+        'relative flex min-h-8 cursor-default items-center rounded-sm py-1.5 pr-8 pl-[9px] text-xs text-foreground-secondary outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-accent data-[highlighted]:text-foreground',
         className,
       )}
       data-slot="select-item"

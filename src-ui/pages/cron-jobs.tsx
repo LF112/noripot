@@ -93,10 +93,10 @@ export function CronJobs({
         }
       />
 
-      <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919] max-[1050px]:overflow-x-auto">
+      <section className="overflow-hidden rounded-lg border border-border bg-card max-[1050px]:overflow-x-auto">
         {jobs.length ? (
           <div className="w-full max-[1050px]:min-w-[820px]">
-            <div className="grid min-h-[42px] grid-cols-[minmax(160px,1.1fr)_minmax(140px,.9fr)_minmax(160px,1fr)_100px_128px] items-center gap-[18px] border-b border-[#2e2e2e] bg-[#171717] px-[18px] text-[10px] text-[#646464] uppercase">
+            <div className="grid min-h-[42px] grid-cols-[minmax(160px,1.1fr)_minmax(140px,.9fr)_minmax(160px,1fr)_100px_128px] items-center gap-[18px] border-b border-border bg-background px-[18px] text-[10px] text-foreground-subtle uppercase">
               <span>任务</span>
               <span>调度表达式</span>
               <span>目标</span>
@@ -105,25 +105,25 @@ export function CronJobs({
             </div>
             {jobs.map((job) => (
               <div
-                className="border-b border-[#242424] last:border-b-0"
+                className="border-b border-secondary last:border-b-0"
                 key={job.id}
               >
-                <div className="grid min-h-[66px] grid-cols-[minmax(160px,1.1fr)_minmax(140px,.9fr)_minmax(160px,1fr)_100px_128px] items-center gap-[18px] border-b border-[#2e2e2e] px-[18px] text-xs text-[#b4b4b4] hover:bg-[#1c1c1c]">
+                <div className="grid min-h-[66px] grid-cols-[minmax(160px,1.1fr)_minmax(140px,.9fr)_minmax(160px,1fr)_100px_128px] items-center gap-[18px] border-b border-border px-[18px] text-xs text-foreground-secondary hover:bg-surface-hover">
                   <div
                     className="flex min-w-0 items-center gap-[11px]"
                     data-label="任务"
                   >
-                    <span className="grid size-[34px] shrink-0 place-items-center rounded-[7px] border border-yellow-400/20 bg-yellow-400/4 text-yellow-400">
+                    <span className="grid size-[34px] shrink-0 place-items-center rounded-[7px] border border-warning/20 bg-warning/4 text-warning">
                       <CalendarClock size={17} />
                     </span>
                     <div>
-                      <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                      <strong className="block truncate text-[13px] font-medium text-foreground-strong">
                         {job.type === 'RUN_SCRIPT' ? '运行脚本' : '拉取仓库'}
                       </strong>
-                      <small className="mt-[3px] block text-[10px] text-[#646464]">
+                      <small className="mt-[3px] block text-[10px] text-foreground-subtle">
                         任务 #{job.id}
                       </small>
-                      <small className="mt-[3px] block font-mono text-[10px] whitespace-nowrap text-[#00c573]">
+                      <small className="mt-[3px] block font-mono text-[10px] whitespace-nowrap text-primary">
                         {formatNextRunCountdown(
                           nextRunById.get(job.id) ?? job.nextRunAt,
                           now,
@@ -135,10 +135,10 @@ export function CronJobs({
                     className="flex min-w-0 flex-col items-start gap-[5px]"
                     data-label="调度表达式"
                   >
-                    <code className="w-max rounded-[5px] border border-[#363636] bg-[#141414] px-[7px] py-1 text-[11px] text-[#b4b4b4]">
+                    <code className="w-max rounded-[5px] border border-border-strong bg-surface-inset px-[7px] py-1 text-[11px] text-foreground-secondary">
                       {job.cron}
                     </code>
-                    <small className="text-[10px] leading-[1.4] text-[#898989]">
+                    <small className="text-[10px] leading-[1.4] text-muted-foreground">
                       {describeCronExpression(job.cron)}
                     </small>
                   </div>
@@ -191,19 +191,19 @@ export function CronJobs({
                 </div>
                 <div
                   className={cn(
-                    'grid min-h-[38px] grid-cols-[14px_auto_auto_minmax(0,1fr)_auto] items-center gap-[9px] bg-[#161616] px-[18px] py-[7px] text-[10px] text-[#646464] [&>p]:m-0 [&>p]:truncate [&>p]:font-mono [&>p]:text-[#b4b4b4] [&>time]:font-mono [&>time]:text-[9px] [&>time]:text-[#646464]',
-                    job.latestLog?.level === 'ERROR' && '[&>svg]:text-red-400',
+                    'grid min-h-[38px] grid-cols-[14px_auto_auto_minmax(0,1fr)_auto] items-center gap-[9px] bg-surface-row px-[18px] py-[7px] text-[10px] text-foreground-subtle [&>p]:m-0 [&>p]:truncate [&>p]:font-mono [&>p]:text-foreground-secondary [&>time]:font-mono [&>time]:text-[9px] [&>time]:text-foreground-subtle',
+                    job.latestLog?.level === 'ERROR' &&
+                      '[&>svg]:text-destructive',
                     job.latestLog?.level === 'SUCCESS' &&
                       '[&>svg]:text-primary',
-                    job.latestLog?.level === 'WARN' &&
-                      '[&>svg]:text-yellow-400',
+                    job.latestLog?.level === 'WARN' && '[&>svg]:text-warning',
                   )}
                 >
                   <ScrollText size={13} />
-                  <span className="text-[#898989]">最近执行</span>
+                  <span className="text-muted-foreground">最近执行</span>
                   {job.latestLog ? (
                     <>
-                      <span className="rounded-sm border border-[#363636] px-[5px] py-0.5 font-mono text-[9px] text-[#898989]">
+                      <span className="rounded-sm border border-border-strong px-[5px] py-0.5 font-mono text-[9px] text-muted-foreground">
                         {job.latestLog.level}
                       </span>
                       <p title={job.latestLog.content}>
@@ -339,7 +339,7 @@ function CronForm({
               </Select>
             </Field>
             <Field label="Cron 表达式" hint="例如：*/30 * * * *">
-              <div className="grid grid-cols-[minmax(0,1fr)_38px] gap-2 [&_[data-slot=input]]:font-mono [&_[data-slot=button]]:size-[38px] [&_[data-slot=button]]:border-[#393939] [&_[data-slot=button]]:bg-[#141414] [&_[data-slot=button]]:text-primary">
+              <div className="grid grid-cols-[minmax(0,1fr)_38px] gap-2 [&_[data-slot=input]]:font-mono [&_[data-slot=button]]:size-[38px] [&_[data-slot=button]]:border-control [&_[data-slot=button]]:bg-surface-inset [&_[data-slot=button]]:text-primary">
                 <Input
                   name="cron"
                   onChange={(event) => setCronValue(event.currentTarget.value)}
@@ -357,7 +357,7 @@ function CronForm({
                 </IconButton>
               </div>
               <span
-                className="mt-[7px] block text-[10px] leading-[1.4] text-[#898989]"
+                className="mt-[7px] block text-[10px] leading-[1.4] text-muted-foreground"
                 aria-live="polite"
               >
                 {describeCronExpression(cronValue)}
@@ -384,23 +384,23 @@ function CronForm({
                 </SelectContent>
               </Select>
             </Field>
-            <label className="flex items-center justify-between gap-5 rounded-md border border-[#2e2e2e] bg-[#171717] p-3">
+            <label className="flex items-center justify-between gap-5 rounded-md border border-border bg-background p-3">
               <span className="flex flex-col gap-1">
-                <strong className="text-[11px] font-medium text-[#b4b4b4]">
+                <strong className="text-[11px] font-medium text-foreground-secondary">
                   {type === 'GIT_PULL' ? '拉取后重启' : '运行前重启'}
                 </strong>
-                <small className="text-[10px] text-[#646464]">
+                <small className="text-[10px] text-foreground-subtle">
                   停止现有进程后执行本次任务
                 </small>
               </span>
               <input
                 defaultChecked={Boolean(record?.config.restart)}
-                className="relative h-[18px] w-[34px] appearance-none rounded-full border border-[#434343] bg-[#242424] transition before:m-0.5 before:block before:size-3 before:rounded-full before:bg-[#898989] before:content-[''] checked:border-primary checked:bg-primary checked:before:translate-x-4 checked:before:bg-[#0f0f0f] motion-reduce:transition-none"
+                className="relative h-[18px] w-[34px] appearance-none rounded-full border border-control-strong bg-secondary transition before:m-0.5 before:block before:size-3 before:rounded-full before:bg-muted-foreground before:content-[''] checked:border-primary checked:bg-primary checked:before:translate-x-4 checked:before:bg-primary-foreground motion-reduce:transition-none"
                 name="restart"
                 type="checkbox"
               />
             </label>
-            <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
+            <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-border px-5 py-[15px]">
               <Button onClick={onClose} type="button">
                 取消
               </Button>
@@ -475,9 +475,9 @@ function CronLogs({
       onClose={onClose}
     >
       {job ? (
-        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-[#141414]">
-          <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-[#2e2e2e] bg-[#141414]/94 px-3.5 py-1.5 backdrop-blur-[10px]">
-            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
+        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-surface-inset">
+          <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-border bg-surface-inset/94 px-3.5 py-1.5 backdrop-blur-[10px]">
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-foreground-subtle [&>svg]:text-primary">
               <CircleDot
                 className={isValidating ? 'animate-pulse' : ''}
                 size={11}
@@ -520,7 +520,7 @@ function CronLogs({
             </div>
           </div>
           {isLoading ? (
-            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-[#898989]">
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-muted-foreground">
               <LoaderCircle
                 className="animate-spin motion-reduce:animate-none"
                 size={20}
@@ -529,7 +529,7 @@ function CronLogs({
             </div>
           ) : null}
           {error ? (
-            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-red-400">
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-destructive">
               <span>
                 {error instanceof Error ? error.message : '日志加载失败'}
               </span>
@@ -605,11 +605,11 @@ function CronBuilder({
 
   return (
     <section
-      className="overflow-hidden rounded-md border border-[#363636] bg-[#141414]"
+      className="overflow-hidden rounded-md border border-border-strong bg-surface-inset"
       aria-label="可视化计划配置"
     >
       <div
-        className="grid grid-cols-4 gap-[3px] border-b border-[#2e2e2e] bg-[#171717] p-1.5"
+        className="grid grid-cols-4 gap-[3px] border-b border-border bg-background p-1.5"
         role="tablist"
         aria-label="计划类型"
       >
@@ -617,9 +617,9 @@ function CronBuilder({
           <button
             aria-selected={schedule.mode === mode.value}
             className={cn(
-              'min-h-[30px] min-w-0 cursor-pointer rounded-full border border-transparent bg-transparent text-[11px] font-medium text-[#898989] hover:border-[#363636] hover:bg-[#242424] hover:text-[#fafafa] focus-visible:outline-2 focus-visible:outline-primary/70',
+              'min-h-[30px] min-w-0 cursor-pointer rounded-full border border-transparent bg-transparent text-[11px] font-medium text-muted-foreground hover:border-border-strong hover:bg-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary/70',
               schedule.mode === mode.value &&
-                'border-primary/30 bg-[#242424] text-primary',
+                'border-primary/30 bg-secondary text-primary',
             )}
             key={mode.value}
             onClick={() => updateSchedule({ mode: mode.value })}
@@ -633,7 +633,7 @@ function CronBuilder({
 
       <div className="flex min-h-[116px] items-center p-[18px] max-[520px]:items-start max-[520px]:p-3.5">
         {schedule.mode === 'interval' ? (
-          <div className="flex w-full items-center gap-[9px] text-[11px] text-[#898989] max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0 [&_[data-slot=select-trigger]]:w-[92px] [&_[data-slot=select-trigger]]:shrink-0">
+          <div className="flex w-full items-center gap-[9px] text-[11px] text-muted-foreground max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0 [&_[data-slot=select-trigger]]:w-[92px] [&_[data-slot=select-trigger]]:shrink-0">
             <span>每隔</span>
             <Input
               aria-label="间隔数值"
@@ -675,7 +675,7 @@ function CronBuilder({
         ) : null}
 
         {schedule.mode === 'daily' ? (
-          <div className="flex w-full items-center gap-[9px] text-[11px] text-[#898989] max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
+          <div className="flex w-full items-center gap-[9px] text-[11px] text-muted-foreground max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
             <span>每天</span>
             <Input
               aria-label="执行时间"
@@ -692,7 +692,7 @@ function CronBuilder({
         {schedule.mode === 'weekly' ? (
           <div className="flex w-full flex-col gap-3.5">
             <fieldset className="m-0 min-w-0 border-0 p-0">
-              <legend className="mb-[7px] text-[9px] text-[#646464] uppercase">
+              <legend className="mb-[7px] text-[9px] text-foreground-subtle uppercase">
                 执行星期
               </legend>
               <div className="grid grid-cols-7 gap-[5px]">
@@ -700,7 +700,7 @@ function CronBuilder({
                   <button
                     aria-pressed={schedule.weekdays.includes(day.value)}
                     className={cn(
-                      'aspect-square min-w-0 cursor-pointer rounded-md border border-[#363636] bg-[#1c1c1c] text-[11px] text-[#898989] hover:border-primary/40 hover:bg-primary/6 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary/70',
+                      'aspect-square min-w-0 cursor-pointer rounded-md border border-border-strong bg-surface-hover text-[11px] text-muted-foreground hover:border-primary/40 hover:bg-primary/6 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary/70',
                       schedule.weekdays.includes(day.value) &&
                         'border-primary/40 bg-primary/6 text-primary',
                     )}
@@ -713,7 +713,7 @@ function CronBuilder({
                 ))}
               </div>
             </fieldset>
-            <div className="flex w-full items-center gap-[9px] text-[11px] text-[#898989] max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
+            <div className="flex w-full items-center gap-[9px] text-[11px] text-muted-foreground max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
               <span>执行时间</span>
               <Input
                 aria-label="每周执行时间"
@@ -728,7 +728,7 @@ function CronBuilder({
         ) : null}
 
         {schedule.mode === 'monthly' ? (
-          <div className="flex w-full items-center gap-[9px] text-[11px] text-[#898989] max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
+          <div className="flex w-full items-center gap-[9px] text-[11px] text-muted-foreground max-[520px]:flex-wrap [&_[data-slot=input]]:w-[104px] [&_[data-slot=input]]:shrink-0">
             <span>每月</span>
             <Input
               aria-label="每月执行日期"
@@ -759,12 +759,12 @@ function CronBuilder({
         ) : null}
       </div>
 
-      <footer className="flex min-h-[58px] items-center justify-between gap-4 border-t border-[#2e2e2e] bg-[#171717] py-2.5 pr-3 pl-4 max-[520px]:flex-col max-[520px]:items-stretch max-[520px]:[&_[data-slot=button]]:w-full">
+      <footer className="flex min-h-[58px] items-center justify-between gap-4 border-t border-border bg-background py-2.5 pr-3 pl-4 max-[520px]:flex-col max-[520px]:items-stretch max-[520px]:[&_[data-slot=button]]:w-full">
         <div className="flex min-w-0 flex-col gap-[5px]">
-          <span className="text-[9px] text-[#646464] uppercase">
+          <span className="text-[9px] text-foreground-subtle uppercase">
             生成表达式
           </span>
-          <code className="truncate text-[11px] text-[#b4b4b4]">
+          <code className="truncate text-[11px] text-foreground-secondary">
             {generatedExpression}
           </code>
         </div>
