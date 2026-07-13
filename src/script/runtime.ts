@@ -252,8 +252,11 @@ export class NoriRuntime {
         const text = decoder.decode(value, { stream: true });
 
         // 处理文本
-        this.handleLogOutput(pathname, type, text);
+        if (text) this.handleLogOutput(pathname, type, text);
       }
+
+      const remainingText = decoder.decode();
+      if (remainingText) this.handleLogOutput(pathname, type, remainingText);
     } catch (error) {
       this.l.error(`[${pathname}] 的 ${type} 日志流读取异常:`, error);
     } finally {
@@ -262,7 +265,7 @@ export class NoriRuntime {
   }
 
   /**
-   * 处理日志输出，将其按行打印到控制台
+   * 处理日志输出，保留同一输出块中的多行内容
    * @param pathname 脚本路径
    * @param type 输出类型，STDOUT 或 STDERR
    * @param rawText 原始文本
@@ -273,21 +276,19 @@ export class NoriRuntime {
     rawText: string,
   ) {
     const log = this.l.tags(type, pathname);
+    const content = rawText
+      .replaceAll('\r\n', '\n')
+      .replaceAll('\r', '\n')
+      .replace(/\n$/, '');
+    if (!content.trim()) return;
 
-    // 按换行符切分
-    const lines = rawText.split('\n');
-
-    for (const line of lines) {
-      if (line.trim() === '') continue; // 跳过空行
-
-      switch (type) {
-        case 'STDOUT':
-          log.log(line);
-          break;
-        case 'STDERR':
-          log.error(line);
-          break;
-      }
+    switch (type) {
+      case 'STDOUT':
+        log.log(content);
+        break;
+      case 'STDERR':
+        log.error(content);
+        break;
     }
   }
 }

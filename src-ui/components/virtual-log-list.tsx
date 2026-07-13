@@ -6,26 +6,53 @@ import type { LogRecord } from '../types';
 interface VirtualLogListProps {
   logs: LogRecord[];
   excludedTag?: string;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onReachStart?: () => void;
 }
 
-export function VirtualLogList({ logs, excludedTag }: VirtualLogListProps) {
+export function VirtualLogList({
+  logs,
+  excludedTag,
+  hasMore = false,
+  loadingMore = false,
+  onReachStart,
+}: VirtualLogListProps) {
   const list = useRef<VListHandle>(null);
+  const initialized = useRef(false);
+  const loadingRequested = useRef(false);
+  const ready = useRef(false);
+  const shouldFollowLatest = useRef(true);
   const latestLogId = logs.at(-1)?.id;
 
   useEffect(() => {
-    if (logs.length === 0) return;
+    if (logs.length === 0) {
+      initialized.current = false;
+      ready.current = false;
+      shouldFollowLatest.current = true;
+      return;
+    }
+    if (initialized.current && !shouldFollowLatest.current) return;
+
+    initialized.current = true;
+    ready.current = false;
     let measuredFrame = 0;
     const initialFrame = requestAnimationFrame(() => {
       list.current?.scrollToIndex(logs.length - 1, { align: 'end' });
       measuredFrame = requestAnimationFrame(() => {
         list.current?.scrollToIndex(logs.length - 1, { align: 'end' });
+        ready.current = true;
       });
     });
     return () => {
       cancelAnimationFrame(initialFrame);
       cancelAnimationFrame(measuredFrame);
     };
-  }, [latestLogId, logs.length]);
+  }, [latestLogId]);
+
+  useEffect(() => {
+    if (!loadingMore) loadingRequested.current = false;
+  }, [loadingMore]);
 
   return (
     <VList
@@ -34,9 +61,26 @@ export function VirtualLogList({ logs, excludedTag }: VirtualLogListProps) {
       bufferSize={400}
       className="flex min-h-0 flex-1 flex-col overflow-y-auto"
       data={logs}
-      itemSize={72}
+      onScroll={(offset) => {
+        const currentList = list.current;
+        if (currentList) {
+          shouldFollowLatest.current =
+            currentList.scrollSize - currentList.viewportSize - offset <= 120;
+        }
+        if (
+          ready.current &&
+          !loadingRequested.current &&
+          offset <= 120 &&
+          hasMore &&
+          !loadingMore
+        ) {
+          loadingRequested.current = true;
+          onReachStart?.();
+        }
+      }}
       ref={list}
       role="log"
+      shift
     >
       {(log) => (
         <article

@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Moon,
   Network,
-  RefreshCw,
   Sprout,
   Sun,
   Timer,
@@ -31,35 +30,32 @@ const navigation: Array<{
 
 interface AppLayoutProps {
   active: ViewKey;
-  loading: boolean;
   children: ReactNode;
   onNavigate: (view: ViewKey) => void;
-  onRefresh: () => void;
 }
 
-export function AppLayout({
-  active,
-  loading,
-  children,
-  onNavigate,
-  onRefresh,
-}: AppLayoutProps) {
+export function AppLayout({ active, children, onNavigate }: AppLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
   );
 
   useEffect(() => {
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncSystemTheme = () =>
+      setTheme(systemTheme.matches ? 'dark' : 'light');
+    systemTheme.addEventListener('change', syncSystemTheme);
+    return () => systemTheme.removeEventListener('change', syncSystemTheme);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    try {
-      localStorage.setItem('noripot-theme', theme);
-    } catch {
-      // Theme switching still works when storage is unavailable.
-    }
     document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', theme === 'dark' ? '#171717' : '#fafafa');
+      .querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')
+      .forEach((meta) => {
+        meta.setAttribute('content', theme === 'dark' ? '#171717' : '#fafafa');
+      });
   }, [theme]);
 
   return (
@@ -123,22 +119,32 @@ export function AppLayout({
         <div
           className={cn(
             'flex min-h-[66px] items-center justify-between gap-2 overflow-hidden border-t border-secondary p-3',
-            collapsed && 'justify-center',
+            collapsed && 'min-h-[108px] flex-col-reverse justify-center',
           )}
         >
-          <div
+          <button
+            aria-label={theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
+            aria-pressed={theme === 'dark'}
             className={cn(
-              'flex min-w-0 flex-1 items-center gap-[9px] pl-[5px]',
-              collapsed && 'hidden',
+              'flex h-9 min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2.5 text-[11px] font-medium text-foreground-secondary hover:border-border hover:bg-muted hover:text-foreground-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70',
+              collapsed &&
+                'size-9 flex-none justify-center px-0 [&>span]:hidden',
             )}
+            onClick={() =>
+              setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+            }
+            title={
+              collapsed
+                ? theme === 'light'
+                  ? '深色模式'
+                  : '浅色模式'
+                : undefined
+            }
+            type="button"
           >
-            <span className="size-[7px] shrink-0 rounded-full bg-primary" />
-            <div>
-              <strong className="text-[11px] font-medium text-foreground-secondary">
-                服务已连接
-              </strong>
-            </div>
-          </div>
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+            <span>{theme === 'light' ? '深色模式' : '浅色模式'}</span>
+          </button>
           <IconButton
             label={collapsed ? '展开侧栏' : '收起侧栏'}
             aria-expanded={!collapsed}
@@ -155,28 +161,10 @@ export function AppLayout({
           collapsed && 'ml-[72px] w-[calc(100%-72px)]',
         )}
       >
-        <header className="sticky top-0 z-15 flex h-[66px] items-center justify-end gap-3 border-b border-border/88 bg-background/92 px-7 backdrop-blur-xl max-[720px]:h-14 max-[720px]:justify-between max-[720px]:px-4">
-          <div className="hidden items-center gap-2 text-[13px] font-medium text-primary max-[720px]:flex">
+        <header className="sticky top-0 z-15 hidden h-14 items-center border-b border-border/88 bg-background/92 px-4 backdrop-blur-xl max-[720px]:flex">
+          <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
             <Sprout size={18} />
             <span>NoriPot</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <IconButton
-              label={theme === 'light' ? '切换到深色模式' : '切换到浅色模式'}
-              onClick={() =>
-                setTheme((current) => (current === 'light' ? 'dark' : 'light'))
-              }
-            >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-            </IconButton>
-            <IconButton label="刷新数据" onClick={onRefresh} disabled={loading}>
-              <RefreshCw
-                className={
-                  loading ? 'animate-spin motion-reduce:animate-none' : ''
-                }
-                size={16}
-              />
-            </IconButton>
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1320px] px-[38px] pt-9 pb-14 max-[720px]:px-4 max-[720px]:pt-6 max-[720px]:pb-[92px]">

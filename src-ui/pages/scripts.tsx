@@ -13,8 +13,15 @@ import {
   TerminalSquare,
   Trash2,
 } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import { request } from '../api';
 import {
   Button,
@@ -610,23 +617,48 @@ function ScriptLogs({
   runAction: ActionRunner;
   onClose: () => void;
 }) {
-  const key = script
-    ? `/api/script/logs?pathname=${encodeURIComponent(script.pathname)}&limit=300`
-    : null;
+  const pageSize = 200;
   const {
-    data: logs,
+    data: logPages,
     error,
     isLoading,
     isValidating,
     mutate,
-  } = useSWR<LogRecord[]>(key, request, {
-    refreshInterval: 1000,
-    refreshWhenHidden: false,
-    revalidateOnFocus: true,
-    keepPreviousData: false,
-  });
+    setSize,
+    size,
+  } = useSWRInfinite<LogRecord[]>(
+    (pageIndex, previousPage) => {
+      if (!script || (previousPage && previousPage.length < pageSize)) {
+        return null;
+      }
+      const beforeId = pageIndex ? previousPage?.at(-1)?.id : undefined;
+      if (pageIndex && beforeId === undefined) return null;
+      return `/api/script/logs?pathname=${encodeURIComponent(script.pathname)}&limit=${pageSize}${beforeId ? `&beforeId=${beforeId}` : ''}`;
+    },
+    request,
+    {
+      refreshInterval: 1000,
+      refreshWhenHidden: false,
+      revalidateOnFocus: true,
+      revalidateFirstPage: true,
+    },
+  );
   const pollCountdown = usePollCountdown(1000, isValidating);
-  const orderedLogs = useMemo(() => logs?.toReversed() ?? [], [logs]);
+  const logs = useMemo(
+    () => [
+      ...new Map((logPages?.flat() ?? []).map((log) => [log.id, log])).values(),
+    ],
+    [logPages],
+  );
+  const orderedLogs = useMemo(() => logs.toReversed(), [logs]);
+  const isLoadingMore =
+    isLoading || (size > 0 && logPages?.[size - 1] === undefined);
+  const hasMore = Boolean(
+    logPages?.length && logPages.at(-1)!.length === pageSize,
+  );
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) void setSize((current) => current + 1);
+  }, [hasMore, isLoadingMore, setSize]);
 
   return (
     <Sheet
@@ -644,14 +676,16 @@ function ScriptLogs({
                 size={11}
               />
               {isValidating
-                ? '正在更新'
-                : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
+                ? isLoadingMore
+                  ? '正在加载更早日志'
+                  : '正在更新'
+                : `${logs.length} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
             <div className="flex items-center gap-0.5">
               <IconButton
                 label="清空日志"
                 disabled={
-                  !logs?.length ||
+                  !logs.length ||
                   busy === `script:logs:clear:${script.pathname}`
                 }
                 onClick={async () => {
@@ -661,7 +695,10 @@ function ScriptLogs({
                     { pathname: script.pathname },
                     '运行日志已清空',
                   );
-                  if (ok) await mutate();
+                  if (ok) {
+                    await setSize(1);
+                    await mutate();
+                  }
                 }}
                 variant="danger"
               >
@@ -700,7 +737,7 @@ function ScriptLogs({
               </span>
             </div>
           ) : null}
-          {!isLoading && !error && logs?.length === 0 ? (
+          {!isLoading && !error && logs.length === 0 ? (
             <EmptyState
               icon={<ScrollText size={20} />}
               title="暂无实例日志"
@@ -708,7 +745,14 @@ function ScriptLogs({
             />
           ) : null}
           {orderedLogs.length ? (
-            <VirtualLogList excludedTag={script.pathname} logs={orderedLogs} />
+            <VirtualLogList
+              excludedTag={script.pathname}
+              hasMore={hasMore}
+              key={script.pathname}
+              loadingMore={isLoadingMore}
+              logs={orderedLogs}
+              onReachStart={loadMore}
+            />
           ) : null}
         </div>
       ) : null}

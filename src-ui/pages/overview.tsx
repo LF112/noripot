@@ -47,7 +47,6 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
     },
     { running: 0, restarting: 0, stopped: 0, failed: 0 },
   );
-  const errors = data.recentLogs.filter((log) => log.level === 'ERROR').length;
   const stats = [
     {
       label: '脚本实例',
@@ -59,23 +58,20 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
     {
       label: '网关路由',
       value: data.gateways.length,
-      detail: 'Caddy 动态配置',
       icon: Network,
       tone: 'blue',
     },
     {
       label: '计划任务',
       value: data.cronJobs.length,
-      detail: '全部已注册',
       icon: Clock3,
       tone: 'yellow',
     },
     {
       label: 'Git 仓库',
       value: data.repositories.length,
-      detail: `${errors} 条近期错误`,
       icon: GitBranch,
-      tone: errors ? 'red' : 'purple',
+      tone: 'purple',
     },
   ];
 
@@ -117,9 +113,11 @@ export function Overview({ data }: { data: DashboardSnapshot }) {
               <strong className="self-center text-[28px] font-normal max-[720px]:text-2xl">
                 {stat.value}
               </strong>
-              <small className="text-[11px] text-foreground-subtle">
-                {stat.detail}
-              </small>
+              {stat.detail ? (
+                <small className="text-[11px] text-foreground-subtle">
+                  {stat.detail}
+                </small>
+              ) : null}
             </article>
           );
         })}

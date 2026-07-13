@@ -99,8 +99,11 @@ class NoriPot {
               const url = new URL(req.url);
               const pathname = url.searchParams.get('pathname') ?? '';
               const limit = Number(url.searchParams.get('limit') ?? 200);
+              const beforeIdParam = url.searchParams.get('beforeId');
+              const beforeId =
+                beforeIdParam === null ? undefined : Number(beforeIdParam);
               return Response.json({
-                data: noripot.dashboard.scriptLogs(pathname, limit),
+                data: noripot.dashboard.scriptLogs(pathname, limit, beforeId),
               });
             } catch (error) {
               return Response.json(
@@ -130,8 +133,11 @@ class NoriPot {
               const url = new URL(req.url);
               const id = Number(url.searchParams.get('id'));
               const limit = Number(url.searchParams.get('limit') ?? 200);
+              const beforeIdParam = url.searchParams.get('beforeId');
+              const beforeId =
+                beforeIdParam === null ? undefined : Number(beforeIdParam);
               return Response.json({
-                data: noripot.dashboard.cronLogs(id, limit),
+                data: noripot.dashboard.cronLogs(id, limit, beforeId),
               });
             } catch (error) {
               return Response.json(

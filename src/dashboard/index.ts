@@ -1,4 +1,4 @@
-import { desc, sql } from 'drizzle-orm';
+import { and, desc, lt, sql } from 'drizzle-orm';
 import type { NoriCronJob } from '../cron';
 import { db } from '../db';
 import { logs, scripts } from '../db/schema';
@@ -44,24 +44,33 @@ export class NoriDashboard {
     return memoryTransport.list(safeLimit);
   }
 
-  scriptLogs(pathname: string, limit = 200) {
+  scriptLogs(pathname: string, limit = 200, beforeId?: number) {
     const normalizedPathname = pathname.trim();
     if (!normalizedPathname) {
       throw new Error('脚本路径不能为空');
     }
+    if (
+      beforeId !== undefined &&
+      (!Number.isSafeInteger(beforeId) || beforeId < 1)
+    ) {
+      throw new Error('日志游标不合法');
+    }
 
     const safeLimit = Math.min(Math.max(limit, 1), 500);
+    const pathnameFilter = sql`exists (
+      select 1
+      from json_each(${logs.tags})
+      where json_each.value = ${normalizedPathname}
+    )`;
     return db
       .select()
       .from(logs)
       .where(
-        sql`exists (
-          select 1
-          from json_each(${logs.tags})
-          where json_each.value = ${normalizedPathname}
-        )`,
+        beforeId === undefined
+          ? pathnameFilter
+          : and(pathnameFilter, lt(logs.id, beforeId)),
       )
-      .orderBy(desc(logs.createdAt))
+      .orderBy(desc(logs.id))
       .limit(safeLimit)
       .all();
   }
@@ -96,24 +105,33 @@ export class NoriDashboard {
     }));
   }
 
-  cronLogs(id: number, limit = 200) {
+  cronLogs(id: number, limit = 200, beforeId?: number) {
     if (!Number.isSafeInteger(id) || id < 1) {
       throw new Error('计划任务 ID 不合法');
+    }
+    if (
+      beforeId !== undefined &&
+      (!Number.isSafeInteger(beforeId) || beforeId < 1)
+    ) {
+      throw new Error('日志游标不合法');
     }
 
     const safeLimit = Math.min(Math.max(limit, 1), 500);
     const tag = `cron:${id}`;
+    const cronFilter = sql`exists (
+      select 1
+      from json_each(${logs.tags})
+      where json_each.value = ${tag}
+    )`;
     return db
       .select()
       .from(logs)
       .where(
-        sql`exists (
-          select 1
-          from json_each(${logs.tags})
-          where json_each.value = ${tag}
-        )`,
+        beforeId === undefined
+          ? cronFilter
+          : and(cronFilter, lt(logs.id, beforeId)),
       )
-      .orderBy(desc(logs.createdAt))
+      .orderBy(desc(logs.id))
       .limit(safeLimit)
       .all();
   }

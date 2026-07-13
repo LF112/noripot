@@ -10,8 +10,15 @@ import {
   Timer,
   Trash2,
 } from 'lucide-react';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import { request } from '../api';
 import {
   Button,
@@ -447,21 +454,46 @@ function CronLogs({
   runAction: ActionRunner;
   onClose: () => void;
 }) {
-  const key = job ? `/api/cron/logs?id=${job.id}&limit=300` : null;
+  const pageSize = 200;
   const {
-    data: logs,
+    data: logPages,
     error,
     isLoading,
     isValidating,
     mutate,
-  } = useSWR<LogRecord[]>(key, request, {
-    refreshInterval: 1000,
-    refreshWhenHidden: false,
-    revalidateOnFocus: true,
-    keepPreviousData: false,
-  });
+    setSize,
+    size,
+  } = useSWRInfinite<LogRecord[]>(
+    (pageIndex, previousPage) => {
+      if (!job || (previousPage && previousPage.length < pageSize)) return null;
+      const beforeId = pageIndex ? previousPage?.at(-1)?.id : undefined;
+      if (pageIndex && beforeId === undefined) return null;
+      return `/api/cron/logs?id=${job.id}&limit=${pageSize}${beforeId ? `&beforeId=${beforeId}` : ''}`;
+    },
+    request,
+    {
+      refreshInterval: 1000,
+      refreshWhenHidden: false,
+      revalidateOnFocus: true,
+      revalidateFirstPage: true,
+    },
+  );
   const pollCountdown = usePollCountdown(1000, isValidating);
-  const orderedLogs = useMemo(() => logs?.toReversed() ?? [], [logs]);
+  const logs = useMemo(
+    () => [
+      ...new Map((logPages?.flat() ?? []).map((log) => [log.id, log])).values(),
+    ],
+    [logPages],
+  );
+  const orderedLogs = useMemo(() => logs.toReversed(), [logs]);
+  const isLoadingMore =
+    isLoading || (size > 0 && logPages?.[size - 1] === undefined);
+  const hasMore = Boolean(
+    logPages?.length && logPages.at(-1)!.length === pageSize,
+  );
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) void setSize((current) => current + 1);
+  }, [hasMore, isLoadingMore, setSize]);
 
   return (
     <Sheet
@@ -483,13 +515,15 @@ function CronLogs({
                 size={11}
               />
               {isValidating
-                ? '正在更新'
-                : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
+                ? isLoadingMore
+                  ? '正在加载更早日志'
+                  : '正在更新'
+                : `${logs.length} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
             <div className="flex items-center gap-0.5">
               <IconButton
                 label="清空日志"
-                disabled={!logs?.length || busy === `cron:logs:clear:${job.id}`}
+                disabled={!logs.length || busy === `cron:logs:clear:${job.id}`}
                 onClick={async () => {
                   const ok = await runAction(
                     `cron:logs:clear:${job.id}`,
@@ -497,7 +531,10 @@ function CronLogs({
                     { id: job.id },
                     '执行日志已清空',
                   );
-                  if (ok) await mutate();
+                  if (ok) {
+                    await setSize(1);
+                    await mutate();
+                  }
                 }}
                 variant="danger"
               >
@@ -535,14 +572,22 @@ function CronLogs({
               </span>
             </div>
           ) : null}
-          {!isLoading && !error && logs?.length === 0 ? (
+          {!isLoading && !error && logs.length === 0 ? (
             <EmptyState
               icon={<ScrollText size={20} />}
               title="暂无执行日志"
               description="任务执行后，开始、完成或失败状态会显示在这里"
             />
           ) : null}
-          {orderedLogs.length ? <VirtualLogList logs={orderedLogs} /> : null}
+          {orderedLogs.length ? (
+            <VirtualLogList
+              hasMore={hasMore}
+              key={job.id}
+              loadingMore={isLoadingMore}
+              logs={orderedLogs}
+              onReachStart={loadMore}
+            />
+          ) : null}
         </div>
       ) : null}
     </Sheet>

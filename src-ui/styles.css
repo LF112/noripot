@@ -2,7 +2,7 @@
 @source "./";
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --app-background: #fafafa;
   --app-foreground: #18181b;
   --app-card: #ffffff;
@@ -41,7 +41,6 @@
 }
 
 :root[data-theme="dark"] {
-  color-scheme: dark;
   --app-background: #171717;
   --app-foreground: #fafafa;
   --app-card: #191919;

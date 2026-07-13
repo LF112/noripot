@@ -26,7 +26,6 @@ export function App() {
     data,
     error,
     isLoading: loading,
-    isValidating,
     mutate,
   } = useSWR<DashboardSnapshot>('/api/dashboard', request, {
     refreshInterval: active === 'overview' ? 2000 : 0,
@@ -69,12 +68,7 @@ export function App() {
   );
 
   return (
-    <AppLayout
-      active={active}
-      loading={loading || isValidating}
-      onNavigate={setActive}
-      onRefresh={() => void mutate()}
-    >
+    <AppLayout active={active} onNavigate={setActive}>
       {loading && !data ? <LoadingState /> : null}
       {!loading && error && !data ? (
         <ErrorState
