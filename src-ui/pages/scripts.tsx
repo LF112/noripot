@@ -35,6 +35,7 @@ import {
   validateEnvironmentEntries,
 } from '../lib/environment-formats';
 import { usePollCountdown } from '../lib/use-poll-countdown';
+import { cn } from '../lib/utils';
 import type {
   ActionRunner,
   LogRecord,
@@ -137,19 +138,23 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
         }
       />
 
-      <section className="toolbar">
-        <label className="search-box">
+      <section className="mb-3.5 flex items-center justify-between gap-4">
+        <label className="flex h-9 w-[min(320px,100%)] items-center gap-[9px] rounded-md border border-[#363636] bg-[#1c1c1c] px-[11px] text-[#646464] focus-within:border-primary/55">
           <Search size={16} />
           <input
+            className="w-full border-0 bg-transparent text-xs text-[#efefef] outline-none placeholder:text-[#595959]"
             aria-label="搜索脚本"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="搜索脚本路径"
             value={query}
           />
         </label>
-        <span className="polling-state">
+        <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
           {isValidating || logsValidating ? (
-            <RefreshCw className="animate-spin" size={11} />
+            <RefreshCw
+              className="animate-spin motion-reduce:animate-none"
+              size={11}
+            />
           ) : (
             <CircleDot size={11} />
           )}
@@ -157,10 +162,10 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
         </span>
       </section>
 
-      <section className="table-panel">
+      <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919] max-[1050px]:overflow-x-auto">
         {filtered.length ? (
-          <div className="data-table scripts-table">
-            <div className="table-head">
+          <div className="w-full max-[1050px]:min-w-[820px]">
+            <div className="grid min-h-[42px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-[#2e2e2e] bg-[#171717] px-[18px] text-[10px] text-[#646464] uppercase">
               <span>脚本</span>
               <span>状态</span>
               <span>进程</span>
@@ -173,15 +178,23 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
               const latestLog =
                 latestLogByPathname.get(script.pathname) ?? null;
               return (
-                <div className="script-job-entry" key={script.pathname}>
-                  <div className="table-row">
-                    <div className="primary-cell" data-label="脚本">
-                      <span className="file-icon">
+                <div
+                  className="border-b border-[#242424] last:border-b-0"
+                  key={script.pathname}
+                >
+                  <div className="grid min-h-[66px] grid-cols-[minmax(220px,1.6fr)_100px_100px_100px_104px] items-center gap-[18px] border-b border-[#2e2e2e] px-[18px] text-xs text-[#b4b4b4] hover:bg-[#1c1c1c]">
+                    <div
+                      className="flex min-w-0 items-center gap-[11px]"
+                      data-label="脚本"
+                    >
+                      <span className="grid size-[34px] shrink-0 place-items-center rounded-[7px] border border-primary/25 bg-primary/5 text-primary">
                         <TerminalSquare size={17} />
                       </span>
                       <div>
-                        <strong>{script.pathname}</strong>
-                        <small>
+                        <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                          {script.pathname}
+                        </strong>
+                        <small className="mt-[3px] block text-[10px] text-[#646464]">
                           {Object.keys(script.env).length} 个环境变量
                         </small>
                       </div>
@@ -189,13 +202,16 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                     <div data-label="状态">
                       <StatusBadge status={script.status} />
                     </div>
-                    <span className="mono muted" data-label="进程">
+                    <span
+                      className="font-mono text-[#646464]"
+                      data-label="进程"
+                    >
                       {script.pid ? `PID ${script.pid}` : '—'}
                     </span>
                     <span data-label="重试">
                       {script.retry < 0 ? '持续重试' : `${script.retry} 次`}
                     </span>
-                    <div className="row-actions">
+                    <div className="flex items-center justify-end gap-0.5">
                       <IconButton
                         label="查看日志"
                         onClick={() => setLogging(script)}
@@ -242,13 +258,20 @@ export function Scripts({ scripts, busy, runAction }: ScriptsProps) {
                     </div>
                   </div>
                   <div
-                    className={`latest-log-row ${latestLog ? `level-${latestLog.level.toLowerCase()}` : ''}`}
+                    className={cn(
+                      'grid min-h-[38px] grid-cols-[14px_auto_auto_minmax(0,1fr)_auto] items-center gap-[9px] bg-[#161616] px-[18px] py-[7px] text-[10px] text-[#646464] [&>p]:m-0 [&>p]:truncate [&>p]:font-mono [&>p]:text-[#b4b4b4] [&>time]:font-mono [&>time]:text-[9px] [&>time]:text-[#646464]',
+                      latestLog?.level === 'ERROR' && '[&>svg]:text-red-400',
+                      latestLog?.level === 'SUCCESS' && '[&>svg]:text-primary',
+                      latestLog?.level === 'WARN' && '[&>svg]:text-yellow-400',
+                    )}
                   >
                     <ScrollText size={13} />
-                    <span className="latest-log-label">最近执行</span>
+                    <span className="text-[#898989]">最近执行</span>
                     {latestLog ? (
                       <>
-                        <span className="log-level">{latestLog.level}</span>
+                        <span className="rounded-sm border border-[#363636] px-[5px] py-0.5 font-mono text-[9px] text-[#898989]">
+                          {latestLog.level}
+                        </span>
                         <p title={latestLog.content}>{latestLog.content}</p>
                         <time>{formatLogTime(latestLog.createdAt)}</time>
                       </>
@@ -422,13 +445,17 @@ function ScriptSettings({
   return (
     <Modal
       description={script?.pathname}
-      className="script-settings-dialog"
+      className="w-[min(680px,calc(100%-32px))] max-[520px]:w-full"
       open={Boolean(script)}
       title="编辑脚本配置"
       onClose={onClose}
     >
       {script ? (
-        <form className="modal-form" key={script.pathname} onSubmit={submit}>
+        <form
+          className="flex flex-col gap-[17px] p-5"
+          key={script.pathname}
+          onSubmit={submit}
+        >
           <Field
             label="最大重试次数"
             hint="-1 表示持续重试，0 表示禁用自动重试"
@@ -441,16 +468,20 @@ function ScriptSettings({
               type="number"
             />
           </Field>
-          <fieldset className="environment-fieldset">
-            <div className="environment-header">
-              <div>
-                <legend>环境变量</legend>
+          <fieldset className="m-0 min-w-0 border-0 p-0">
+            <div className="flex min-h-9 items-center justify-between gap-3">
+              <div className="flex flex-col gap-[3px]">
+                <legend className="text-[11px] font-medium text-[#b4b4b4]">
+                  环境变量
+                </legend>
               </div>
               {environmentMode === 'table' ? (
                 <Button
                   onClick={() =>
                     setEnvironment((rows) => [...rows, createEnvironmentRow()])
                   }
+                  className="text-[#00c573]"
+                  size="sm"
                   type="button"
                   variant="ghost"
                 >
@@ -459,16 +490,20 @@ function ScriptSettings({
                 </Button>
               ) : null}
             </div>
-            <div className="environment-editor">
+            <div className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#141414]">
               <div
                 aria-label="环境变量格式"
-                className="environment-mode-tabs"
+                className="grid grid-cols-5 gap-[3px] border-b border-[#2e2e2e] bg-[#171717] p-1.5 max-[520px]:grid-cols-3"
                 role="tablist"
               >
                 {environmentModes.map((mode) => (
                   <button
                     aria-selected={environmentMode === mode.value}
-                    className={environmentMode === mode.value ? 'active' : ''}
+                    className={cn(
+                      'flex min-h-[30px] min-w-0 cursor-pointer items-center justify-center gap-[5px] rounded-full border border-transparent bg-transparent text-[11px] font-medium text-[#898989] hover:border-[#363636] hover:bg-[#202020] hover:text-[#efefef] focus-visible:outline-2 focus-visible:outline-primary/70 max-[520px]:min-h-[34px]',
+                      environmentMode === mode.value &&
+                        'border-primary/30 bg-[#242424] text-primary',
+                    )}
                     key={mode.value}
                     onClick={() => changeEnvironmentMode(mode.value)}
                     role="tab"
@@ -484,9 +519,12 @@ function ScriptSettings({
                 ))}
               </div>
               {environmentMode === 'table' ? (
-                <div className="environment-list">
+                <div className="flex flex-col gap-2 p-3">
                   {environment.map((row) => (
-                    <div className="environment-row" key={row.id}>
+                    <div
+                      className="grid grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)_34px] items-center gap-2 max-[520px]:grid-cols-[minmax(0,1fr)_34px] [&_[data-slot=input]:first-child]:font-mono [&_[data-slot=input]:first-child]:uppercase max-[520px]:[&_[data-slot=input]:first-child]:col-start-1 max-[520px]:[&_[data-slot=input]:nth-child(2)]:col-start-1 max-[520px]:[&_[data-slot=button]]:col-start-2 max-[520px]:[&_[data-slot=button]]:row-span-2 max-[520px]:[&_[data-slot=button]]:row-start-1"
+                      key={row.id}
+                    >
                       <Input
                         aria-label="环境变量键名"
                         autoComplete="off"
@@ -519,7 +557,7 @@ function ScriptSettings({
               ) : (
                 <textarea
                   aria-label={`${environmentMode} 环境变量`}
-                  className="environment-source"
+                  className="block min-h-[218px] w-full resize-y border-0 bg-[#141414] px-4 py-3.5 font-mono text-xs leading-[1.65] text-[#efefef] outline-none placeholder:text-[#4d4d4d] focus:shadow-[inset_0_0_0_1px_rgb(62_207_142/45%)] max-[520px]:min-h-[190px]"
                   onChange={(event) => {
                     setEnvironmentSource(event.target.value);
                     setError('');
@@ -539,8 +577,10 @@ function ScriptSettings({
               )}
             </div>
           </fieldset>
-          {error ? <p className="form-error">{error}</p> : null}
-          <div className="modal-actions">
+          {error ? (
+            <p className="m-0 text-[11px] text-red-400">{error}</p>
+          ) : null}
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
             <Button onClick={onClose} type="button">
               取消
             </Button>
@@ -595,15 +635,18 @@ function ScriptLogs({
       onClose={onClose}
     >
       {script ? (
-        <div className="script-log-view">
-          <div className="script-log-toolbar">
-            <span className="polling-state">
-              <CircleDot className={isValidating ? 'active' : ''} size={11} />
+        <div className="flex min-h-[420px] flex-1 flex-col overflow-hidden bg-[#141414]">
+          <div className="sticky top-0 z-2 flex min-h-[46px] items-center justify-between border-b border-[#2e2e2e] bg-[#141414]/94 px-3.5 py-1.5 backdrop-blur-[10px]">
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#646464] [&>svg]:text-primary">
+              <CircleDot
+                className={isValidating ? 'animate-pulse' : ''}
+                size={11}
+              />
               {isValidating
                 ? '正在更新'
                 : `${logs?.length ?? 0} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
-            <div className="log-toolbar-actions">
+            <div className="flex items-center gap-0.5">
               <IconButton
                 label="清空日志"
                 disabled={
@@ -629,7 +672,11 @@ function ScriptLogs({
                 onClick={() => void mutate()}
               >
                 <RefreshCw
-                  className={isValidating ? 'animate-spin' : ''}
+                  className={
+                    isValidating
+                      ? 'animate-spin motion-reduce:animate-none'
+                      : ''
+                  }
                   size={15}
                 />
               </IconButton>
@@ -637,13 +684,16 @@ function ScriptLogs({
           </div>
 
           {isLoading ? (
-            <div className="log-loading">
-              <LoaderCircle className="animate-spin" size={20} />
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-[#898989]">
+              <LoaderCircle
+                className="animate-spin motion-reduce:animate-none"
+                size={20}
+              />
               <span>正在加载日志...</span>
             </div>
           ) : null}
           {error ? (
-            <div className="log-loading error-state">
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2.5 text-[11px] text-red-400">
               <span>
                 {error instanceof Error ? error.message : '日志加载失败'}
               </span>

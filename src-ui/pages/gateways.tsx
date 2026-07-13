@@ -88,14 +88,17 @@ export function Gateways({
       />
 
       {gateways.length ? (
-        <section className="gateway-grid">
+        <section className="grid grid-cols-3 gap-4 max-[1050px]:grid-cols-2 max-[720px]:grid-cols-1">
           {gateways.map((gateway) => (
-            <article className="gateway-card" key={gateway.id}>
-              <header>
-                <div className="gateway-icon">
+            <article
+              className="min-w-0 rounded-lg border border-[#2e2e2e] bg-[#191919] p-[18px] hover:border-[#393939]"
+              key={gateway.id}
+            >
+              <header className="flex items-center justify-between">
+                <div className="grid size-[34px] shrink-0 place-items-center rounded-[7px] border border-primary/25 bg-primary/5 text-primary">
                   <Route size={18} />
                 </div>
-                <div className="row-actions">
+                <div className="flex items-center justify-end gap-0.5">
                   <IconButton
                     label="编辑路由"
                     onClick={() => setEditing(gateway)}
@@ -118,25 +121,31 @@ export function Gateways({
                   </IconButton>
                 </div>
               </header>
-              <div className="gateway-path">
-                <strong>{gateway.path}</strong>
-                <ExternalLink size={14} />
+              <div className="my-[18px] flex items-center justify-start gap-2">
+                <strong className="truncate text-lg font-normal">
+                  {gateway.path}
+                </strong>
+                <ExternalLink className="text-[#646464]" size={14} />
               </div>
-              <dl>
-                <div>
-                  <dt>目标脚本</dt>
-                  <dd>{gateway.pathname}</dd>
+              <dl className="m-0 flex flex-col gap-2.5 border-t border-[#2e2e2e] pt-[15px]">
+                <div className="flex min-w-0 justify-between gap-3.5">
+                  <dt className="text-[11px] text-[#646464]">目标脚本</dt>
+                  <dd className="m-0 truncate text-right text-[11px] text-[#b4b4b4]">
+                    {gateway.pathname}
+                  </dd>
                 </div>
-                <div>
-                  <dt>上游端口</dt>
-                  <dd className="mono">127.0.0.1:{gateway.port}</dd>
+                <div className="flex min-w-0 justify-between gap-3.5">
+                  <dt className="text-[11px] text-[#646464]">上游端口</dt>
+                  <dd className="m-0 truncate text-right font-mono text-[11px] text-[#b4b4b4]">
+                    127.0.0.1:{gateway.port}
+                  </dd>
                 </div>
               </dl>
             </article>
           ))}
         </section>
       ) : (
-        <section className="table-panel">
+        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
           <EmptyState
             action={
               <Button onClick={() => setEditing('new')} variant="primary">
@@ -158,7 +167,7 @@ export function Gateways({
         onClose={() => setEditing(null)}
       >
         <form
-          className="modal-form"
+          className="flex flex-col gap-[17px] p-5"
           key={record?.id ?? 'new'}
           onSubmit={submit}
         >
@@ -180,7 +189,7 @@ export function Gateways({
               </SelectContent>
             </Select>
           </Field>
-          <div className="form-grid">
+          <div className="grid grid-cols-2 gap-3.5 max-[520px]:grid-cols-1">
             <Field label="公开路径">
               <Input
                 defaultValue={record?.path ?? ''}
@@ -202,7 +211,7 @@ export function Gateways({
               />
             </Field>
           </div>
-          <div className="modal-actions">
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
             <Button onClick={() => setEditing(null)} type="button">
               取消
             </Button>

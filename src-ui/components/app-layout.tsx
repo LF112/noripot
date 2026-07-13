@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { cn } from '../lib/utils';
 import type { ViewKey } from '../types';
 import { IconButton } from './ui';
 
@@ -44,28 +45,51 @@ export function AppLayout({
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="app-shell">
+    <div className="flex min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
       <aside
-        className={collapsed ? 'sidebar collapsed' : 'sidebar'}
+        className={cn(
+          'fixed inset-y-0 left-0 z-20 flex w-[232px] flex-col border-r border-[#2e2e2e] bg-[#141414] transition-[width] duration-180 ease-out motion-reduce:transition-none max-[720px]:hidden',
+          collapsed && 'w-[72px]',
+        )}
         data-state={collapsed ? 'collapsed' : 'expanded'}
       >
-        <div className="brand">
-          <div className="brand-mark">
+        <div
+          className={cn(
+            'flex h-[66px] items-center gap-3 overflow-hidden border-b border-[#242424] px-[18px]',
+            collapsed && 'justify-center px-0',
+          )}
+        >
+          <div className="grid size-[34px] shrink-0 place-items-center rounded-lg border border-primary/35 bg-primary/6 text-primary">
             <Sprout size={19} />
           </div>
-          <div className="brand-copy">
+          <div
+            className={cn(
+              'flex min-w-[130px] flex-col gap-0.5',
+              collapsed && 'hidden',
+            )}
+          >
             <span>NoriPot</span>
-            <small>CONTROL PLANE</small>
+            <small className="font-mono text-[10px] leading-[1.4] text-[#898989] uppercase">
+              CONTROL PLANE
+            </small>
           </div>
         </div>
 
-        <nav className="sidebar-nav" aria-label="主导航">
+        <nav
+          className="flex flex-1 flex-col gap-1 px-3 py-4"
+          aria-label="主导航"
+        >
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 aria-current={active === item.key ? 'page' : undefined}
-                className={active === item.key ? 'nav-item active' : 'nav-item'}
+                className={cn(
+                  'flex h-10 w-full cursor-pointer items-center gap-3 overflow-hidden rounded-md border border-transparent px-[11px] text-left text-[13px] font-medium whitespace-nowrap text-[#898989] hover:bg-[#1c1c1c] hover:text-[#efefef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/70',
+                  collapsed && 'justify-center px-0 [&>span]:hidden',
+                  active === item.key &&
+                    'border-[#2e2e2e] bg-[#202020] text-[#fafafa] [&>svg]:text-primary',
+                )}
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
                 title={collapsed ? item.label : undefined}
@@ -78,11 +102,23 @@ export function AppLayout({
           })}
         </nav>
 
-        <div className="sidebar-footer">
-          <div className="service-status">
-            <span className="pulse-dot" />
+        <div
+          className={cn(
+            'flex min-h-[66px] items-center justify-between gap-2 overflow-hidden border-t border-[#242424] p-3',
+            collapsed && 'justify-center',
+          )}
+        >
+          <div
+            className={cn(
+              'flex min-w-0 flex-1 items-center gap-[9px] pl-[5px]',
+              collapsed && 'hidden',
+            )}
+          >
+            <span className="size-[7px] shrink-0 rounded-full bg-primary" />
             <div>
-              <strong>服务已连接</strong>
+              <strong className="text-[11px] font-medium text-[#b4b4b4]">
+                服务已连接
+              </strong>
             </div>
           </div>
           <IconButton
@@ -95,24 +131,42 @@ export function AppLayout({
         </div>
       </aside>
 
-      <div className="workspace">
-        <header className="topbar">
-          <div className="mobile-brand">
+      <div
+        className={cn(
+          'ml-[232px] min-h-screen w-[calc(100%-232px)] transition-[width,margin-left] duration-180 ease-out motion-reduce:transition-none max-[720px]:ml-0 max-[720px]:w-full',
+          collapsed && 'ml-[72px] w-[calc(100%-72px)]',
+        )}
+      >
+        <header className="sticky top-0 z-15 flex h-[66px] items-center justify-end gap-3 border-b border-[#2e2e2e]/88 bg-background/92 px-7 backdrop-blur-xl max-[720px]:h-14 max-[720px]:justify-between max-[720px]:px-4">
+          <div className="hidden items-center gap-2 text-[13px] font-medium text-primary max-[720px]:flex">
             <Sprout size={18} />
             <span>NoriPot</span>
           </div>
           <IconButton label="刷新数据" onClick={onRefresh} disabled={loading}>
-            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
+            <RefreshCw
+              className={
+                loading ? 'animate-spin motion-reduce:animate-none' : ''
+              }
+              size={16}
+            />
           </IconButton>
         </header>
-        <main className="content">{children}</main>
-        <nav className="mobile-nav" aria-label="移动端导航">
+        <main className="mx-auto w-full max-w-[1320px] px-[38px] pt-9 pb-14 max-[720px]:px-4 max-[720px]:pt-6 max-[720px]:pb-[92px]">
+          {children}
+        </main>
+        <nav
+          className="fixed inset-x-0 bottom-0 z-30 hidden min-h-16 grid-cols-5 border-t border-[#2e2e2e] bg-[#141414]/96 px-1 pt-1.5 pb-[max(6px,env(safe-area-inset-bottom))] backdrop-blur-xl max-[720px]:grid"
+          aria-label="移动端导航"
+        >
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
               <button
                 aria-current={active === item.key ? 'page' : undefined}
-                className={active === item.key ? 'active' : ''}
+                className={cn(
+                  'flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-transparent text-[9px] text-[#646464] focus-visible:outline-2 focus-visible:outline-primary/70',
+                  active === item.key && 'text-primary',
+                )}
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
                 type="button"

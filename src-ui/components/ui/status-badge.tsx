@@ -16,7 +16,12 @@ const statusLabels: Record<string, string> = {
 export function StatusBadge({ status }: { status: string }) {
   return (
     <span
-      className={cn('status-badge', `status-${status.toLowerCase()}`)}
+      className={cn(
+        'inline-flex min-w-[70px] items-center justify-center gap-1.5 rounded-full border border-[#363636] bg-[#1c1c1c] px-2 py-1 text-[10px] leading-none whitespace-nowrap text-[#898989] [&>span]:size-[5px] [&>span]:rounded-full [&>span]:bg-current',
+        'data-[status=running]:border-primary/25 data-[status=running]:text-primary data-[status=success]:border-primary/25 data-[status=success]:text-primary',
+        'data-[status=restarting]:border-yellow-400/25 data-[status=restarting]:text-yellow-400 data-[status=warn]:border-yellow-400/25 data-[status=warn]:text-yellow-400',
+        'data-[status=failed]:border-red-400/25 data-[status=failed]:text-red-400 data-[status=error]:border-red-400/25 data-[status=error]:text-red-400',
+      )}
       data-slot="badge"
       data-status={status.toLowerCase()}
     >

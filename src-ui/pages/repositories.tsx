@@ -53,30 +53,45 @@ export function Repositories({
       />
 
       {repositories.length ? (
-        <section className="repo-list">
+        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
           {repositories.map((repo) => (
-            <article className="repo-row" key={repo.pathname}>
-              <div className="repo-main">
-                <span className="repo-icon">
+            <article
+              className="grid min-h-[94px] grid-cols-[minmax(300px,1fr)_180px_120px] items-center gap-5 border-b border-[#242424] px-[18px] py-3 last:border-b-0 max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:gap-3"
+              key={repo.pathname}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="grid size-[34px] shrink-0 place-items-center rounded-[7px] border border-primary/25 bg-primary/5 text-primary">
                   <GitBranch size={18} />
                 </span>
                 <div>
-                  <strong>{repo.pathname}</strong>
+                  <strong className="block truncate text-[13px] font-medium text-[#efefef]">
+                    {repo.pathname}
+                  </strong>
                   <a
+                    className="mt-1 block truncate text-[11px] text-[#898989] no-underline hover:text-[#00c573]"
                     href={publicRepositoryUrl(repo.url)}
                     rel="noreferrer"
                     target="_blank"
                   >
                     {maskRepositoryUrl(repo.url)}
                   </a>
-                  <div className="repo-commit">
-                    <GitCommitHorizontal size={13} />
+                  <div className="mt-[7px] flex min-w-0 items-center gap-[7px] text-[10px] text-[#646464]">
+                    <GitCommitHorizontal
+                      className="shrink-0 text-primary"
+                      size={13}
+                    />
                     {repo.commitHash ? (
                       <>
-                        <code title={repo.commitHash}>
+                        <code
+                          className="shrink-0 text-[10px] text-[#b4b4b4]"
+                          title={repo.commitHash}
+                        >
                           {repo.commitHash.slice(0, 8)}
                         </code>
-                        <span title={repo.commitMessage ?? undefined}>
+                        <span
+                          className="truncate"
+                          title={repo.commitMessage ?? undefined}
+                        >
                           {repo.commitMessage || '无提交说明'}
                         </span>
                       </>
@@ -86,8 +101,8 @@ export function Repositories({
                   </div>
                 </div>
               </div>
-              <div className="repo-sync-meta">
-                <div className="branch-chip">
+              <div className="flex min-w-0 flex-col items-start gap-[7px] max-[720px]:col-start-1 max-[720px]:row-start-2 [&>span]:flex [&>span]:items-center [&>span]:gap-[5px] [&>span]:text-[9px] [&>span]:whitespace-nowrap [&>span]:text-[#646464]">
+                <div className="inline-flex w-max max-w-full items-center gap-1.5 overflow-hidden rounded-full border border-[#363636] bg-[#171717] px-[9px] py-[5px] font-mono text-[10px] whitespace-nowrap text-[#898989]">
                   <GitBranch size={13} />
                   {repo.branch || '默认分支'}
                 </div>
@@ -104,7 +119,7 @@ export function Repositories({
                   </span>
                 ) : null}
               </div>
-              <div className="row-actions">
+              <div className="flex items-center justify-end gap-0.5 max-[720px]:col-start-2 max-[720px]:row-span-2 max-[720px]:row-start-1">
                 <IconButton
                   label="拉取更新"
                   disabled={busy === `git:pull:${repo.pathname}`}
@@ -141,7 +156,7 @@ export function Repositories({
           ))}
         </section>
       ) : (
-        <section className="table-panel">
+        <section className="overflow-hidden rounded-lg border border-[#2e2e2e] bg-[#191919]">
           <EmptyState
             action={
               <Button onClick={() => setEditing('new')} variant="primary">
@@ -243,7 +258,7 @@ function RepositoryForm({
     >
       {repository ? (
         <form
-          className="modal-form"
+          className="flex flex-col gap-[17px] p-5"
           key={record?.pathname ?? 'new'}
           ref={formRef}
           onSubmit={submit}
@@ -271,7 +286,7 @@ function RepositoryForm({
               required
             />
           </Field>
-          <div className="form-grid">
+          <div className="grid grid-cols-2 gap-3.5 max-[520px]:grid-cols-1">
             <Field label="分支">
               <Input
                 defaultValue={record?.branch ?? ''}
@@ -288,7 +303,7 @@ function RepositoryForm({
             </Field>
           </div>
           <Field label="代理地址" hint="可选，仅用于此仓库的 HTTP/HTTPS 拉取">
-            <div className="proxy-input-row">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
               <Input
                 defaultValue={record?.proxy ?? ''}
                 name="proxy"
@@ -306,7 +321,11 @@ function RepositoryForm({
             </div>
             {proxyTest ? (
               <div
-                className={`proxy-test-result proxy-test-${proxyTest.type}`}
+                className={`grid grid-cols-[16px_minmax(0,1fr)] items-start gap-[7px] rounded-md border bg-[#141414] px-2.5 py-2 text-[10px] leading-[1.5] [overflow-wrap:anywhere] [&>svg]:mt-px ${
+                  proxyTest.type === 'success'
+                    ? 'border-primary/30 text-primary'
+                    : 'border-red-400/30 text-red-400'
+                }`}
                 role={proxyTest.type === 'error' ? 'alert' : 'status'}
               >
                 {proxyTest.type === 'success' ? (
@@ -318,7 +337,7 @@ function RepositoryForm({
               </div>
             ) : null}
           </Field>
-          <div className="modal-actions">
+          <div className="mx-[-20px] mt-1 mb-[-20px] flex justify-end gap-2 border-t border-[#2e2e2e] px-5 py-[15px]">
             <Button onClick={onClose} type="button">
               取消
             </Button>
