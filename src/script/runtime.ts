@@ -122,6 +122,8 @@ export class NoriRuntime {
     });
     info.process = proc;
 
+    this.l.tags('STDOUT', pathname).success(`🚀 实例已启动，PID: ${proc.pid}`);
+
     // 监听输出
     void this.streamLogger(pathname, proc.stdout, 'STDOUT');
     void this.streamLogger(pathname, proc.stderr, 'STDERR');
@@ -134,8 +136,6 @@ export class NoriRuntime {
       }
       this.l.error(`❌ [${pathname}] 进程监控异常:`, error);
     });
-
-    this.l.log(`🚀 实例 [${pathname}] 已启动，PID: ${proc.pid}`);
   }
 
   /**
