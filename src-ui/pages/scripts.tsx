@@ -45,7 +45,7 @@ import { usePollCountdown } from '../lib/use-poll-countdown';
 import { cn } from '../lib/utils';
 import type {
   ActionRunner,
-  LogRecord,
+  LogPageRecord,
   ScriptLatestLogRecord,
   ScriptRecord,
 } from '../types';
@@ -626,12 +626,12 @@ function ScriptLogs({
     mutate,
     setSize,
     size,
-  } = useSWRInfinite<LogRecord[]>(
+  } = useSWRInfinite<LogPageRecord>(
     (pageIndex, previousPage) => {
-      if (!script || (previousPage && previousPage.length < pageSize)) {
+      if (!script || (previousPage && previousPage.logs.length < pageSize)) {
         return null;
       }
-      const beforeId = pageIndex ? previousPage?.at(-1)?.id : undefined;
+      const beforeId = pageIndex ? previousPage?.logs.at(-1)?.id : undefined;
       if (pageIndex && beforeId === undefined) return null;
       return `/api/script/logs?pathname=${encodeURIComponent(script.pathname)}&limit=${pageSize}${beforeId ? `&beforeId=${beforeId}` : ''}`;
     },
@@ -646,15 +646,23 @@ function ScriptLogs({
   const pollCountdown = usePollCountdown(1000, isValidating);
   const logs = useMemo(
     () => [
-      ...new Map((logPages?.flat() ?? []).map((log) => [log.id, log])).values(),
+      ...new Map(
+        (logPages?.flatMap((page) => page.logs) ?? []).map((log) => [
+          log.id,
+          log,
+        ]),
+      ).values(),
     ],
     [logPages],
   );
+  const total = logPages?.[0]?.total ?? 0;
   const orderedLogs = useMemo(() => logs.toReversed(), [logs]);
   const isLoadingMore =
     isLoading || (size > 0 && logPages?.[size - 1] === undefined);
   const hasMore = Boolean(
-    logPages?.length && logPages.at(-1)!.length === pageSize,
+    logPages?.length &&
+      logPages.at(-1)!.logs.length === pageSize &&
+      logs.length < total,
   );
   const loadMore = useCallback(() => {
     if (!isLoadingMore && hasMore) void setSize((current) => current + 1);
@@ -679,7 +687,7 @@ function ScriptLogs({
                 ? isLoadingMore
                   ? '正在加载更早日志'
                   : '正在更新'
-                : `${logs.length} 条日志 · ${pollCountdown} 秒后轮询`}
+                : `${total} 条日志 · ${pollCountdown} 秒后轮询`}
             </span>
             <div className="flex items-center gap-0.5">
               <IconButton

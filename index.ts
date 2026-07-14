@@ -103,7 +103,11 @@ class NoriPot {
               const beforeId =
                 beforeIdParam === null ? undefined : Number(beforeIdParam);
               return Response.json({
-                data: noripot.dashboard.scriptLogs(pathname, limit, beforeId),
+                data: noripot.dashboard.scriptLogPage(
+                  pathname,
+                  limit,
+                  beforeId,
+                ),
               });
             } catch (error) {
               return Response.json(
@@ -137,7 +141,7 @@ class NoriPot {
               const beforeId =
                 beforeIdParam === null ? undefined : Number(beforeIdParam);
               return Response.json({
-                data: noripot.dashboard.cronLogs(id, limit, beforeId),
+                data: noripot.dashboard.cronLogPage(id, limit, beforeId),
               });
             } catch (error) {
               return Response.json(

@@ -57,6 +57,11 @@ export interface LogRecord {
   createdAt: string;
 }
 
+export interface LogPageRecord {
+  logs: LogRecord[];
+  total?: number;
+}
+
 export interface ScriptLatestLogRecord {
   pathname: string;
   log: LogRecord | null;

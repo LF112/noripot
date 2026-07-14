@@ -1,4 +1,4 @@
-import { and, desc, lt, sql } from 'drizzle-orm';
+import { and, count, desc, lt, sql } from 'drizzle-orm';
 import type { NoriCronJob } from '../cron';
 import { db } from '../db';
 import { logs, scripts } from '../db/schema';
@@ -75,6 +75,28 @@ export class NoriDashboard {
       .all();
   }
 
+  scriptLogPage(pathname: string, limit = 200, beforeId?: number) {
+    const pageLogs = this.scriptLogs(pathname, limit, beforeId);
+    if (beforeId !== undefined) {
+      return { logs: pageLogs };
+    }
+
+    const normalizedPathname = pathname.trim();
+    const pathnameFilter = sql`exists (
+      select 1
+      from json_each(${logs.tags})
+      where json_each.value = ${normalizedPathname}
+    )`;
+    const total =
+      db.select({ value: count() }).from(logs).where(pathnameFilter).get()
+        ?.value ?? 0;
+
+    return {
+      logs: pageLogs,
+      total,
+    };
+  }
+
   clearScriptLogs(pathname: string) {
     const normalizedPathname = pathname.trim();
     if (!normalizedPathname) {
@@ -134,6 +156,28 @@ export class NoriDashboard {
       .orderBy(desc(logs.id))
       .limit(safeLimit)
       .all();
+  }
+
+  cronLogPage(id: number, limit = 200, beforeId?: number) {
+    const pageLogs = this.cronLogs(id, limit, beforeId);
+    if (beforeId !== undefined) {
+      return { logs: pageLogs };
+    }
+
+    const tag = `cron:${id}`;
+    const cronFilter = sql`exists (
+      select 1
+      from json_each(${logs.tags})
+      where json_each.value = ${tag}
+    )`;
+    const total =
+      db.select({ value: count() }).from(logs).where(cronFilter).get()?.value ??
+      0;
+
+    return {
+      logs: pageLogs,
+      total,
+    };
   }
 
   clearCronLogs(id: number) {
