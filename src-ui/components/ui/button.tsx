@@ -13,7 +13,7 @@ const buttonVariants = cva(
         secondary:
           'border-control bg-card text-foreground-strong enabled:hover:border-control-hover enabled:hover:bg-secondary',
         danger:
-          'border-destructive/30 bg-transparent text-destructive enabled:hover:border-destructive/25 enabled:hover:bg-destructive/6 enabled:hover:text-destructive',
+          'border-destructive bg-transparent text-destructive enabled:hover:border-destructive enabled:hover:bg-destructive enabled:hover:text-white',
         ghost:
           'border-transparent bg-transparent text-muted-foreground enabled:hover:border-border-strong enabled:hover:bg-secondary enabled:hover:text-foreground',
       },

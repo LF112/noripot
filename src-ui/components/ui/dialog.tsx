@@ -11,6 +11,8 @@ interface DialogProps {
   children: ReactNode;
   onClose: () => void;
   className?: string;
+  icon?: ReactNode;
+  priority?: boolean;
 }
 
 export function Dialog({
@@ -20,6 +22,8 @@ export function Dialog({
   children,
   onClose,
   className,
+  icon,
+  priority = false,
 }: DialogProps) {
   return (
     <DialogPrimitive.Root
@@ -30,24 +34,29 @@ export function Dialog({
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 z-50 bg-overlay backdrop-blur-[5px] data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
+          className="fixed inset-0 bg-overlay backdrop-blur-[5px] data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
           data-slot="dialog-overlay"
+          style={{ zIndex: priority ? 70 : 50 }}
         />
         <DialogPrimitive.Content
           className={cn(
-            'fixed top-1/2 left-1/2 z-51 max-h-[min(760px,calc(100vh-40px))] w-[min(520px,100%)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-control bg-card data-[state=open]:animate-[dialog-in_180ms_cubic-bezier(0.16,1,0.3,1)] max-[520px]:inset-x-0 max-[520px]:top-auto max-[520px]:bottom-0 max-[520px]:max-h-[calc(100vh-28px)] max-[520px]:w-full max-[520px]:translate-x-0 max-[520px]:translate-y-0 max-[520px]:rounded-t-lg max-[520px]:rounded-b-none max-[520px]:border-x-0 max-[520px]:border-b-0 max-[520px]:data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none',
+            'fixed top-1/2 left-1/2 max-h-[min(760px,calc(100vh-40px))] w-[min(520px,100%)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-control bg-card data-[state=open]:animate-[dialog-in_180ms_cubic-bezier(0.16,1,0.3,1)] max-[520px]:inset-x-0 max-[520px]:top-auto max-[520px]:bottom-0 max-[520px]:max-h-[calc(100vh-28px)] max-[520px]:w-full max-[520px]:translate-x-0 max-[520px]:translate-y-0 max-[520px]:rounded-t-lg max-[520px]:rounded-b-none max-[520px]:border-x-0 max-[520px]:border-b-0 max-[520px]:data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none',
             className,
           )}
           data-slot="dialog-content"
+          style={{ zIndex: priority ? 71 : 51 }}
         >
-          <header className="flex items-start justify-between gap-5 border-b border-border px-5 py-[18px] [&_h2]:m-0 [&_h2]:text-[17px] [&_h2]:font-normal [&_p]:mt-1.5 [&_p]:mb-0 [&_p]:text-[11px] [&_p]:leading-[1.4] [&_p]:text-muted-foreground">
-            <div>
-              <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
-              {description ? (
-                <DialogPrimitive.Description>
-                  {description}
-                </DialogPrimitive.Description>
-              ) : null}
+          <header className="flex items-start justify-between gap-5 border-b border-border px-5 py-[18px] [&_h2]:m-0 [&_h2]:break-words [&_h2]:text-[17px] [&_h2]:font-normal [&_p]:mt-1.5 [&_p]:mb-0 [&_p]:break-all [&_p]:text-[11px] [&_p]:leading-[1.4] [&_p]:text-muted-foreground">
+            <div className="flex min-w-0 items-start gap-3">
+              {icon}
+              <div className="min-w-0">
+                <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+                {description ? (
+                  <DialogPrimitive.Description>
+                    {description}
+                  </DialogPrimitive.Description>
+                ) : null}
+              </div>
             </div>
             <DialogPrimitive.Close asChild>
               <Button aria-label="关闭" size="icon" variant="ghost">

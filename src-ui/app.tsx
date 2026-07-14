@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { api, request } from './api';
 import { AppLayout } from './components/app-layout';
-import { Button, IconButton } from './components/ui';
+import { Button, ConfirmDialog, IconButton } from './components/ui';
 import { cn } from './lib/utils';
 import { CronJobs } from './pages/cron-jobs';
 import { Gateways } from './pages/gateways';
@@ -17,10 +17,24 @@ interface ToastState {
   message: string;
 }
 
+interface ConfirmationState {
+  title: string;
+  description: string;
+  confirmLabel: string;
+}
+
+interface PendingConfirmation extends ConfirmationState {
+  resolve: (confirmed: boolean) => void;
+}
+
 export function App() {
   const [active, setActive] = useState<ViewKey>('overview');
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [confirmation, setConfirmation] = useState<PendingConfirmation | null>(
+    null,
+  );
+  const pendingConfirmation = useRef<PendingConfirmation | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
     data,
@@ -43,11 +57,35 @@ export function App() {
   useEffect(() => {
     return () => {
       if (toastTimer.current) clearTimeout(toastTimer.current);
+      pendingConfirmation.current?.resolve(false);
     };
+  }, []);
+
+  const settleConfirmation = useCallback((confirmed: boolean) => {
+    const pending = pendingConfirmation.current;
+    if (!pending) return;
+
+    pendingConfirmation.current = null;
+    setConfirmation(null);
+    pending.resolve(confirmed);
+  }, []);
+
+  const requestConfirmation = useCallback((next: ConfirmationState) => {
+    return new Promise<boolean>((resolve) => {
+      pendingConfirmation.current?.resolve(false);
+      const pending = { ...next, resolve };
+      pendingConfirmation.current = pending;
+      setConfirmation(pending);
+    });
   }, []);
 
   const runAction: ActionRunner = useCallback(
     async (key, path, body, successMessage) => {
+      const dangerousAction = getDangerousAction(key, path, body);
+      if (dangerousAction && !(await requestConfirmation(dangerousAction))) {
+        return false;
+      }
+
       setBusy(key);
       try {
         await api.post(path, body);
@@ -64,7 +102,7 @@ export function App() {
         setBusy(null);
       }
     },
-    [mutate, notify],
+    [mutate, notify, requestConfirmation],
   );
 
   return (
@@ -79,6 +117,14 @@ export function App() {
         />
       ) : null}
       {data ? renderView(active, data, busy, runAction) : null}
+      <ConfirmDialog
+        confirmLabel={confirmation?.confirmLabel ?? '确认操作'}
+        description={confirmation?.description ?? ''}
+        open={Boolean(confirmation)}
+        title={confirmation?.title ?? '确认操作'}
+        onCancel={() => settleConfirmation(false)}
+        onConfirm={() => settleConfirmation(true)}
+      />
       {toast ? (
         <div
           aria-live="polite"
@@ -104,6 +150,93 @@ export function App() {
       ) : null}
     </AppLayout>
   );
+}
+
+function getDangerousAction(
+  key: string,
+  path: string,
+  body: unknown,
+): ConfirmationState | null {
+  const pathname = getBodyValue(body, 'pathname');
+  const id = getBodyValue(body, 'id');
+
+  switch (path) {
+    case '/api/sync':
+      return {
+        title: '同步脚本目录？',
+        description:
+          '已从目录移除的脚本将停止运行，其实例记录和关联配置也会被删除。',
+        confirmLabel: '确认同步',
+      };
+    case '/api/stop':
+      return {
+        title: `停止实例 ${pathname || ''}？`,
+        description: '实例进程将立即终止，正在处理的任务或请求可能中断。',
+        confirmLabel: '停止实例',
+      };
+    case '/api/cron/execute':
+      return {
+        title: `立即执行任务 #${id || ''}？`,
+        description: '任务配置的脚本运行、实例重启或仓库拉取操作将立即执行。',
+        confirmLabel: '立即执行',
+      };
+    case '/api/cron/remove':
+      return {
+        title: `删除计划任务 #${id || ''}？`,
+        description:
+          '该任务的调度配置将被永久删除。已有执行日志不会被一并删除。',
+        confirmLabel: '删除任务',
+      };
+    case '/api/gateway/remove':
+      return {
+        title: `删除网关路由 #${id || ''}？`,
+        description: '对应的公开访问路径将立即失效。',
+        confirmLabel: '删除路由',
+      };
+    case '/api/git/remove':
+      return {
+        title: `删除 ${pathname || '该仓库'} 的仓库配置？`,
+        description:
+          'Git 远端、分支、令牌和代理配置将被删除，本地脚本文件会保留。',
+        confirmLabel: '删除配置',
+      };
+    case '/api/git/pull':
+      return {
+        title: `强制拉取 ${pathname || '该仓库'}？`,
+        description:
+          '本地内容将与远端分支强制同步，未提交更改和未跟踪文件会被清理。',
+        confirmLabel: '强制拉取',
+      };
+    case '/api/git/upsert':
+      if (!key.endsWith(':new')) return null;
+      return {
+        title: `添加并克隆 ${pathname || '该仓库'}？`,
+        description: '如果目标脚本目录已存在，其内容会由克隆的远端仓库替换。',
+        confirmLabel: '添加并克隆',
+      };
+    case '/api/script/logs/clear':
+      return {
+        title: `清空 ${pathname || '该脚本'} 的日志？`,
+        description: '该脚本当前保存的全部运行日志将被永久删除。',
+        confirmLabel: '清空日志',
+      };
+    case '/api/cron/logs/clear':
+      return {
+        title: `清空任务 #${id || ''} 的日志？`,
+        description: '该计划任务当前保存的全部执行日志将被永久删除。',
+        confirmLabel: '清空日志',
+      };
+    default:
+      return null;
+  }
+}
+
+function getBodyValue(body: unknown, key: string): string {
+  if (!body || typeof body !== 'object') return '';
+  const value = Reflect.get(body, key);
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
 }
 
 function renderView(

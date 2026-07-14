@@ -1,4 +1,5 @@
 export { Button, type ButtonProps, buttonVariants } from './button';
+export { ConfirmDialog } from './confirm-dialog';
 export { Dialog, Modal, Sheet } from './dialog';
 export { EmptyState } from './empty-state';
 export { Field } from './field';
