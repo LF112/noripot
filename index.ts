@@ -415,7 +415,7 @@ class NoriPot {
           POST: async (req) => {
             try {
               const data = (await req.json()) as { pathname: string };
-              const source = await noripot.git.pull(data.pathname);
+              const { source } = await noripot.git.pull(data.pathname);
               return Response.json({
                 data: source,
               });

@@ -21,8 +21,13 @@ export interface GitProxyTestOptions {
   proxy?: string | null;
 }
 
+export interface GitPullResult {
+  source: TGitSource;
+  changed: boolean;
+}
+
 export class GitSource extends NoriFile {
-  private syncing = new Map<string, Promise<TGitSource>>();
+  private syncing = new Map<string, Promise<GitPullResult>>();
 
   constructor() {
     super('projects/scripts');
@@ -144,7 +149,7 @@ export class GitSource extends NoriFile {
    * 强制同步远端分支代码
    * @param pathname 脚本路径
    * */
-  async pull(pathname: string): Promise<TGitSource> {
+  async pull(pathname: string): Promise<GitPullResult> {
     this.assertPathname(pathname);
     const pending = this.syncing.get(pathname);
     if (pending) return pending;
@@ -173,6 +178,7 @@ export class GitSource extends NoriFile {
    * 获取远端仓库的分支列表
    * @param url Git 仓库地址
    * @param token Personal Access Token
+   * @param proxy
    * */
   async listRemoteBranches(url: string, token?: string, proxy?: string | null) {
     const cleanUrl = this.normalizeUrl(url);
@@ -231,8 +237,19 @@ export class GitSource extends NoriFile {
       throw new Error(`Git 仓库目录无效: ${repositoryPath}`);
     }
 
+    const previousCommitHash = (
+      await this.git(['rev-parse', 'HEAD'], repositoryPath)
+    ).trim();
     await this.sync(source, repositoryPath);
-    return this.updateCommitMetadata(pathname, repositoryPath);
+    const updatedSource = await this.updateCommitMetadata(
+      pathname,
+      repositoryPath,
+    );
+
+    return {
+      source: updatedSource,
+      changed: previousCommitHash !== updatedSource.commitHash,
+    };
   }
 
   private async updateCommitMetadata(pathname: string, repositoryPath: string) {
@@ -371,6 +388,7 @@ export class GitSource extends NoriFile {
    * 获取远端仓库的默认分支
    * @param url Git 仓库地址
    * @param token Personal Access Token
+   * @param proxy
    * */
   private async defaultBranch(
     url: string,
@@ -393,6 +411,7 @@ export class GitSource extends NoriFile {
    * @param url Git 仓库地址
    * @param token Personal Access Token
    * @param branch 分支名称
+   * @param proxy
    * */
   private async assertRemoteBranch(
     url: string,
@@ -522,6 +541,8 @@ export class GitSource extends NoriFile {
    * @param args Git 命令参数
    * @param cwd 当前工作目录
    * @param token Personal Access Token
+   * @param proxy
+   * @param timeoutMs
    * */
   private async git(
     args: string[],

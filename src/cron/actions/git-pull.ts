@@ -28,13 +28,10 @@ export class GitPullAction extends ActionBase {
   }
 
   protected async perform() {
-    if (this.config.restart) {
+    const { changed } = await this.context.git.pull(this.config.pathname);
+
+    if (this.config.restart && changed) {
       await this.context.script.stop(this.config.pathname);
-    }
-
-    await this.context.git.pull(this.config.pathname);
-
-    if (this.config.restart) {
       await this.context.script.run(this.config.pathname);
     }
   }
