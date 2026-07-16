@@ -240,7 +240,7 @@ export class GitSource extends NoriFile {
     const previousCommitHash = (
       await this.git(['rev-parse', 'HEAD'], repositoryPath)
     ).trim();
-    await this.sync(source, repositoryPath);
+    await this.sync(source, repositoryPath, true);
     const updatedSource = await this.updateCommitMetadata(
       pathname,
       repositoryPath,
@@ -331,8 +331,13 @@ export class GitSource extends NoriFile {
    * 同步远端分支代码到本地
    * @param source Git 仓库配置
    * @param repositoryPath 本地仓库路径
+   * @param resetTrackedFiles 是否重置已跟踪文件的本地修改
    * */
-  private async sync(source: TGitSource, repositoryPath: string) {
+  private async sync(
+    source: TGitSource,
+    repositoryPath: string,
+    resetTrackedFiles = false,
+  ) {
     const token = source.token ?? undefined;
     const authenticatedUrl = this.withToken(source.url, token);
     const branches = await this.listRemoteBranches(
@@ -362,21 +367,20 @@ export class GitSource extends NoriFile {
       source.proxy,
     );
 
-    const gitignorePath = join(repositoryPath, '.gitignore');
-    const gitignore = await readFile(gitignorePath).catch(() => null);
-    await this.git(
-      ['checkout', '-B', branch, `refs/remotes/origin/${branch}`],
-      repositoryPath,
-    );
-    await this.git(
-      ['reset', '--hard', `refs/remotes/origin/${branch}`],
-      repositoryPath,
-    );
-    await this.git(['clean', '-ffdx', '-e', '.gitignore'], repositoryPath);
-
-    if (gitignore) {
-      await writeFile(gitignorePath, gitignore);
+    // 不执行 git clean，避免删除未跟踪及被忽略的运行时文件。
+    if (resetTrackedFiles) {
+      await this.git(['reset', '--hard', 'HEAD'], repositoryPath);
     }
+    await this.git(
+      [
+        'checkout',
+        '--no-overwrite-ignore',
+        '-B',
+        branch,
+        `refs/remotes/origin/${branch}`,
+      ],
+      repositoryPath,
+    );
 
     await this.git(
       ['branch', '--set-upstream-to', `origin/${branch}`, branch],
