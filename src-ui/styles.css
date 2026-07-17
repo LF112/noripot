@@ -38,6 +38,7 @@
   --app-overlay: rgb(24 24 27 / 42%);
   --app-tooltip: #27272a;
   --app-tooltip-foreground: #fafafa;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 :root[data-theme="dark"] {
@@ -159,14 +160,14 @@
   }
 }
 
-@keyframes drawer-enter {
+@keyframes fade-in {
   from {
-    transform: translateX(100%);
+    opacity: 0;
   }
 }
 
-@keyframes fade-in {
-  from {
+@keyframes fade-out {
+  to {
     opacity: 0;
   }
 }
@@ -174,20 +175,269 @@
 @keyframes dialog-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.98);
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(5px) scale(0.985);
+  }
+}
+
+@keyframes dialog-mobile-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.99);
+  }
+}
+
+@keyframes dialog-mobile-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+}
+
+@keyframes drawer-enter {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-exit {
+  to {
+    transform: translateX(100%);
   }
 }
 
 @keyframes tooltip-in {
   from {
     opacity: 0;
-    transform: translateY(2px);
+    transform: scale(0.97);
+  }
+}
+
+@keyframes tooltip-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
   }
 }
 
 @keyframes select-in {
   from {
     opacity: 0;
-    transform: translateY(-2px) scale(0.98);
+    transform: scale(0.98);
+  }
+}
+
+@keyframes select-out {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes view-in {
+  from {
+    opacity: 0.55;
+    transform: translateY(4px);
+  }
+}
+
+[data-slot="button"] {
+  transition-duration: 140ms;
+  transition-property: color, background-color, border-color, transform;
+  transition-timing-function: var(--motion-ease-out);
+}
+
+[data-slot="button"]:enabled:active {
+  transform: scale(0.97);
+  transition-duration: 90ms;
+}
+
+[data-slot="nav-action"],
+[data-slot="theme-toggle"],
+[data-slot="mobile-nav-action"] {
+  transition-duration: 140ms;
+  transition-property: color, background-color, border-color, transform;
+  transition-timing-function: var(--motion-ease-out);
+}
+
+[data-slot="nav-action"]:active,
+[data-slot="theme-toggle"]:active,
+[data-slot="mobile-nav-action"]:active {
+  transform: scale(0.98);
+  transition-duration: 90ms;
+}
+
+[data-slot="mobile-nav-action"] > svg {
+  transition: transform 160ms var(--motion-ease-out);
+}
+
+[data-slot="mobile-nav-action"][aria-current="page"] > svg {
+  transform: translateY(-1px) scale(1.06);
+}
+
+[data-slot="input"],
+[data-slot="select-trigger"] {
+  transition-duration: 150ms;
+  transition-property:
+    color, background-color, border-color, box-shadow, transform;
+  transition-timing-function: var(--motion-ease-out);
+}
+
+[data-slot="select-trigger"]:active {
+  transform: scale(0.99);
+  transition-duration: 90ms;
+}
+
+[data-slot="select-trigger"] > svg {
+  transition: transform 160ms var(--motion-ease-out);
+}
+
+[data-slot="select-trigger"][data-state="open"] > svg {
+  transform: rotate(180deg);
+}
+
+[data-slot="select-item"] {
+  transition:
+    color 100ms ease,
+    background-color 100ms ease;
+}
+
+[data-slot="dialog-overlay"],
+[data-slot="sheet-overlay"] {
+  will-change: opacity;
+}
+
+[data-slot="dialog-overlay"][data-state="open"],
+[data-slot="sheet-overlay"][data-state="open"] {
+  animation: fade-in 160ms var(--motion-ease-out) both;
+}
+
+[data-slot="dialog-overlay"][data-state="closed"],
+[data-slot="sheet-overlay"][data-state="closed"] {
+  animation: fade-out 120ms var(--motion-ease-out) both;
+}
+
+[data-slot="dialog-content"] {
+  will-change: transform, opacity;
+}
+
+[data-slot="dialog-content"][data-state="open"] {
+  animation: dialog-in 200ms var(--motion-ease-out) both;
+}
+
+[data-slot="dialog-content"][data-state="closed"] {
+  animation: dialog-out 140ms var(--motion-ease-out) both;
+}
+
+[data-slot="sheet-content"] {
+  will-change: transform;
+}
+
+[data-slot="sheet-content"][data-state="open"] {
+  animation: drawer-enter 220ms var(--motion-ease-out) both;
+}
+
+[data-slot="sheet-content"][data-state="closed"] {
+  animation: drawer-exit 170ms var(--motion-ease-out) both;
+}
+
+[data-slot="select-content"] {
+  transform-origin: var(--radix-select-content-transform-origin, top center);
+  will-change: transform, opacity;
+}
+
+[data-slot="select-content"][data-state="open"] {
+  animation: select-in 150ms var(--motion-ease-out) both;
+}
+
+[data-slot="select-content"][data-state="closed"] {
+  animation: select-out 100ms var(--motion-ease-out) both;
+}
+
+[data-slot="tooltip-content"] {
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  will-change: transform, opacity;
+}
+
+[data-slot="tooltip-content"][data-state="delayed-open"] {
+  animation: tooltip-in 130ms var(--motion-ease-out) both;
+}
+
+[data-slot="tooltip-content"][data-state="closed"] {
+  animation: tooltip-out 90ms var(--motion-ease-out) both;
+}
+
+[data-slot="toast"][data-state="open"] {
+  animation: toast-in 180ms var(--motion-ease-out) both;
+}
+
+[data-slot="toast"][data-state="closed"] {
+  animation: toast-out 140ms var(--motion-ease-out) both;
+}
+
+[data-slot="view"] {
+  animation: view-in 160ms var(--motion-ease-out) both;
+}
+
+@media (max-width: 520px) {
+  [data-slot="dialog-content"][data-state="open"] {
+    animation-name: dialog-mobile-in;
+  }
+
+  [data-slot="dialog-content"][data-state="closed"] {
+    animation-name: dialog-mobile-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"]:enabled:active,
+  [data-slot="nav-action"]:active,
+  [data-slot="theme-toggle"]:active,
+  [data-slot="mobile-nav-action"]:active,
+  [data-slot="mobile-nav-action"][aria-current="page"] > svg,
+  [data-slot="select-trigger"]:active,
+  [data-slot="select-trigger"][data-state="open"] > svg {
+    transform: none;
+  }
+
+  [data-slot="dialog-overlay"][data-state="open"],
+  [data-slot="sheet-overlay"][data-state="open"],
+  [data-slot="dialog-content"][data-state="open"],
+  [data-slot="sheet-content"][data-state="open"],
+  [data-slot="select-content"][data-state="open"],
+  [data-slot="tooltip-content"][data-state="delayed-open"],
+  [data-slot="toast"][data-state="open"],
+  [data-slot="view"] {
+    animation: fade-in 100ms ease both;
+  }
+
+  [data-slot="dialog-overlay"][data-state="closed"],
+  [data-slot="sheet-overlay"][data-state="closed"],
+  [data-slot="dialog-content"][data-state="closed"],
+  [data-slot="sheet-content"][data-state="closed"],
+  [data-slot="select-content"][data-state="closed"],
+  [data-slot="tooltip-content"][data-state="closed"],
+  [data-slot="toast"][data-state="closed"] {
+    animation: fade-out 80ms ease both;
   }
 }

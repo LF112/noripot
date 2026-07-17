@@ -34,13 +34,13 @@ export function Dialog({
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 bg-overlay backdrop-blur-[5px] data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
+          className="fixed inset-0 bg-overlay backdrop-blur-[5px]"
           data-slot="dialog-overlay"
           style={{ zIndex: priority ? 70 : 50 }}
         />
         <DialogPrimitive.Content
           className={cn(
-            'fixed top-1/2 left-1/2 max-h-[min(760px,calc(100vh-40px))] w-[min(520px,100%)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-control bg-card data-[state=open]:animate-[dialog-in_180ms_cubic-bezier(0.16,1,0.3,1)] max-[520px]:inset-x-0 max-[520px]:top-auto max-[520px]:bottom-0 max-[520px]:max-h-[calc(100vh-28px)] max-[520px]:w-full max-[520px]:translate-x-0 max-[520px]:translate-y-0 max-[520px]:rounded-t-lg max-[520px]:rounded-b-none max-[520px]:border-x-0 max-[520px]:border-b-0 max-[520px]:data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none',
+            'fixed top-1/2 left-1/2 max-h-[min(760px,calc(100vh-40px))] w-[min(520px,100%)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-lg border border-control bg-card max-[520px]:inset-x-0 max-[520px]:top-auto max-[520px]:bottom-0 max-[520px]:max-h-[calc(100vh-28px)] max-[520px]:w-full max-[520px]:translate-x-0 max-[520px]:translate-y-0 max-[520px]:rounded-t-lg max-[520px]:rounded-b-none max-[520px]:border-x-0 max-[520px]:border-b-0',
             className,
           )}
           data-slot="dialog-content"
@@ -88,12 +88,12 @@ export function Sheet({
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 z-50 bg-overlay backdrop-blur-[5px] data-[state=open]:animate-[fade-in_150ms_ease-out] motion-reduce:animate-none"
+          className="fixed inset-0 z-50 bg-overlay backdrop-blur-[5px]"
           data-slot="sheet-overlay"
         />
         <DialogPrimitive.Content
           className={cn(
-            'fixed inset-y-0 right-0 z-56 flex w-[min(720px,92vw)] flex-col border-l border-control bg-card data-[state=open]:animate-[drawer-enter_180ms_cubic-bezier(0.16,1,0.3,1)] max-[520px]:w-full max-[520px]:border-l-0 motion-reduce:animate-none',
+            'fixed inset-y-0 right-0 z-56 flex w-[min(720px,92vw)] flex-col border-l border-control bg-card max-[520px]:w-full max-[520px]:border-l-0',
             className,
           )}
           data-slot="sheet-content"

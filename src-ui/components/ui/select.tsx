@@ -39,7 +39,7 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          'z-90 max-h-[min(320px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-control bg-popover text-popover-foreground data-[state=open]:animate-[select-in_140ms_cubic-bezier(0.16,1,0.3,1)] motion-reduce:data-[state=open]:animate-none',
+          'z-90 max-h-[min(320px,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-control bg-popover text-popover-foreground',
           className,
         )}
         data-slot="select-content"

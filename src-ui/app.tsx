@@ -31,6 +31,7 @@ export function App() {
   const [active, setActive] = useState<ViewKey>('overview');
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<PendingConfirmation | null>(
     null,
   );
@@ -48,11 +49,24 @@ export function App() {
     shouldRetryOnError: true,
   });
 
-  const notify = useCallback((next: ToastState) => {
+  const dismissToast = useCallback(() => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToast(next);
-    toastTimer.current = setTimeout(() => setToast(null), 3600);
+    setToastOpen(false);
+    toastTimer.current = setTimeout(() => {
+      setToast(null);
+      toastTimer.current = null;
+    }, 160);
   }, []);
+
+  const notify = useCallback(
+    (next: ToastState) => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setToast(next);
+      setToastOpen(true);
+      toastTimer.current = setTimeout(dismissToast, 3600);
+    },
+    [dismissToast],
+  );
 
   useEffect(() => {
     return () => {
@@ -116,7 +130,11 @@ export function App() {
           onRetry={() => void mutate()}
         />
       ) : null}
-      {data ? renderView(active, data, busy, runAction) : null}
+      {data ? (
+        <div data-slot="view" key={active}>
+          {renderView(active, data, busy, runAction)}
+        </div>
+      ) : null}
       <ConfirmDialog
         confirmLabel={confirmation?.confirmLabel ?? '确认操作'}
         description={confirmation?.description ?? ''}
@@ -134,6 +152,7 @@ export function App() {
               ? '[&>svg]:text-primary'
               : '[&>svg]:text-destructive',
           )}
+          data-state={toastOpen ? 'open' : 'closed'}
           data-slot="toast"
           role={toast.type === 'error' ? 'alert' : 'status'}
         >
@@ -143,7 +162,7 @@ export function App() {
             <AlertTriangle size={17} />
           )}
           <span>{toast.message}</span>
-          <IconButton label="关闭通知" onClick={() => setToast(null)}>
+          <IconButton label="关闭通知" onClick={dismissToast}>
             <X size={14} />
           </IconButton>
         </div>

@@ -104,6 +104,7 @@ export function AppLayout({ active, children, onNavigate }: AppLayoutProps) {
                   active === item.key &&
                     'border-border bg-muted text-foreground [&>svg]:text-primary',
                 )}
+                data-slot="nav-action"
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
                 title={collapsed ? item.label : undefined}
@@ -130,6 +131,7 @@ export function AppLayout({ active, children, onNavigate }: AppLayoutProps) {
               collapsed &&
                 'size-9 flex-none justify-center px-0 [&>span]:hidden',
             )}
+            data-slot="theme-toggle"
             onClick={() =>
               setTheme((current) => (current === 'light' ? 'dark' : 'light'))
             }
@@ -183,6 +185,7 @@ export function AppLayout({ active, children, onNavigate }: AppLayoutProps) {
                   'flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-transparent text-[9px] text-foreground-subtle focus-visible:outline-2 focus-visible:outline-primary/70',
                   active === item.key && 'text-primary',
                 )}
+                data-slot="mobile-nav-action"
                 key={item.key}
                 onClick={() => onNavigate(item.key)}
                 type="button"
