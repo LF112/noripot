@@ -151,16 +151,59 @@ export class NoriGateway {
    * @param entries 网关配置列表
    */
   private createConfig(entries: GatewayRecord[]): IConfig {
-    const routes: IModulesCaddyhttpRoute[] = entries.map((entry) => ({
-      match: [{ path: [entry.path] }],
-      handle: [
+    const routes: IModulesCaddyhttpRoute[] = entries
+      .map((entry) => ({ entry, prefix: this.getRoutePrefix(entry.path) }))
+      .sort((a, b) => b.prefix.length - a.prefix.length)
+      .flatMap(({ entry, prefix }) => [
         {
-          handler: 'reverse_proxy',
-          upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
+          match: [
+            {
+              path: [prefix || '/'],
+              header: { Upgrade: ['websocket'] },
+            },
+          ],
+          handle: [
+            {
+              handler: 'rewrite' as const,
+              uri: '/ws',
+            },
+            {
+              handler: 'reverse_proxy' as const,
+              upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
+            },
+          ],
+          terminal: true,
         },
-      ],
-      terminal: true,
-    }));
+        {
+          match: [{ path: [prefix ? `${prefix}/ws` : '/ws'] }],
+          handle: [
+            {
+              handler: 'static_response' as const,
+              status_code: '404',
+              body: 'Not Found',
+            },
+          ],
+          terminal: true,
+        },
+        {
+          match: [{ path: prefix ? [prefix, `${prefix}/*`] : ['/*'] }],
+          handle: [
+            ...(prefix
+              ? [
+                  {
+                    handler: 'rewrite' as const,
+                    strip_path_prefix: prefix,
+                  },
+                ]
+              : []),
+            {
+              handler: 'reverse_proxy' as const,
+              upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
+            },
+          ],
+          terminal: true,
+        },
+      ]);
 
     routes.push({
       handle: [
@@ -188,6 +231,14 @@ export class NoriGateway {
         },
       },
     };
+  }
+
+  /**
+   * 将用户配置的路径匹配器转换为上游服务的挂载前缀
+   */
+  private getRoutePrefix(path: string) {
+    const prefix = path.endsWith('/*') ? path.slice(0, -2) : path;
+    return prefix === '/' ? '' : prefix.replace(/\/+$/, '');
   }
 
   /**
