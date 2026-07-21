@@ -154,56 +154,24 @@ export class NoriGateway {
     const routes: IModulesCaddyhttpRoute[] = entries
       .map((entry) => ({ entry, prefix: this.getRoutePrefix(entry.path) }))
       .sort((a, b) => b.prefix.length - a.prefix.length)
-      .flatMap(({ entry, prefix }) => [
-        {
-          match: [
-            {
-              path: [prefix || '/'],
-              header: { Upgrade: ['websocket'] },
-            },
-          ],
-          handle: [
-            {
-              handler: 'rewrite' as const,
-              uri: '/ws',
-            },
-            {
-              handler: 'reverse_proxy' as const,
-              upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
-            },
-          ],
-          terminal: true,
-        },
-        {
-          match: [{ path: [prefix ? `${prefix}/ws` : '/ws'] }],
-          handle: [
-            {
-              handler: 'static_response' as const,
-              status_code: '404',
-              body: 'Not Found',
-            },
-          ],
-          terminal: true,
-        },
-        {
-          match: [{ path: prefix ? [prefix, `${prefix}/*`] : ['/*'] }],
-          handle: [
-            ...(prefix
-              ? [
-                  {
-                    handler: 'rewrite' as const,
-                    strip_path_prefix: prefix,
-                  },
-                ]
-              : []),
-            {
-              handler: 'reverse_proxy' as const,
-              upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
-            },
-          ],
-          terminal: true,
-        },
-      ]);
+      .map(({ entry, prefix }) => ({
+        match: [{ path: prefix ? [prefix, `${prefix}/*`] : ['/*'] }],
+        handle: [
+          ...(prefix
+            ? [
+                {
+                  handler: 'rewrite' as const,
+                  strip_path_prefix: prefix,
+                },
+              ]
+            : []),
+          {
+            handler: 'reverse_proxy' as const,
+            upstreams: [{ dial: `127.0.0.1:${entry.port}` }],
+          },
+        ],
+        terminal: true,
+      }));
 
     routes.push({
       handle: [
